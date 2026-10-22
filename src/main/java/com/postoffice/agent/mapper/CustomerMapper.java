@@ -1,0 +1,56 @@
+package com.postoffice.agent.mapper;
+
+import com.postoffice.agent.dto.customer.CustomerRequest;
+import com.postoffice.agent.dto.customer.CustomerResponse;
+import com.postoffice.agent.entity.Customer;
+import com.postoffice.agent.enums.CustomerStatus;
+
+import java.time.LocalDateTime;
+
+public class CustomerMapper {
+
+    public static Customer toEntity(CustomerRequest request) {
+
+        return Customer.builder()
+                .customerCode(request.getCustomerCode())
+                .name(request.getName())
+                .fatherName(request.getFatherName())
+                .mobile(request.getMobile())
+                .dob(request.getDob())
+                .gender(request.getGender())
+                .address(request.getAddress())
+                .city(request.getCity())
+                .state(request.getState())
+                .email(request.getEmail())
+                .pinCode(request.getPinCode())
+                .aadharNumber(request.getAadhaar())
+                .pan(request.getPan())
+                .customerStatus(CustomerStatus.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .agent(request.getAgentId())
+                .build();
+    }
+
+    public static CustomerResponse toResponse(Customer customer) {
+
+        return CustomerResponse.builder()
+                .id(customer.getCustomerId())
+                .customerCode(customer.getCustomerCode())
+                .name(customer.getName())
+                .fatherName(customer.getFatherName())
+                .mobile(customer.getMobile())
+                .dob(customer.getDob())
+                .gender(customer.getGender())
+                .email(customer.getEmail())
+                .address(customer.getAddress())
+                .city(customer.getCity())
+                .state(customer.getState())
+                .pinCode(customer.getPinCode())
+                .aadhaar(customer.getAadharNumber())
+                .pan(customer.getPan())
+                .status(customer.getCustomerStatus())
+                .createdAt(customer.getCreatedAt())
+                .agentId(customer.getAgent())
+                .build();
+    }
+}

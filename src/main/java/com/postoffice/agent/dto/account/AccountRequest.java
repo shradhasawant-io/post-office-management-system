@@ -1,0 +1,32 @@
+package com.postoffice.agent.dto.account;
+
+import com.postoffice.agent.enums.AccountType;
+import com.postoffice.agent.enums.Frequency;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AccountRequest {
+
+    private Long customerId;
+
+    private String accountNumber;
+
+    private AccountType accountType;
+
+    private BigDecimal depositAmount;
+
+    private Frequency frequency;
+
+    private LocalDate startDate;
+}
