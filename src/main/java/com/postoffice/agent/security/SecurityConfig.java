@@ -67,23 +67,22 @@ public class SecurityConfig {
                         // Only ADMIN can manage agents
                         .requestMatchers("/api/agents/**").hasRole("ADMIN")
 
+                        // AGENT business operations
+                        //.requestMatchers("/api/customers/**").hasRole("AGENT")
+
                         // ADMIN endpoints
                         .requestMatchers("/api/customers/agents/**").hasRole("ADMIN")
-                        .requestMatchers("/api/accounts/agents/**").hasRole("ADMIN")
                         .requestMatchers("/api/customers/**").authenticated()
                         .requestMatchers("/api/accounts/**").authenticated()
+                        .requestMatchers("/api/accounts/agents/**").hasRole("ADMIN")
 
                         // Admin read-only business data
                         .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/agents/**").hasRole("ADMIN")
 
                         // ADMIN business-data access
-                        .requestMatchers("/api/customers/agents/**").hasRole("ADMIN")
-                        .requestMatchers("/api/accounts/agents/**").hasRole("ADMIN")
                         .requestMatchers("/api/transactions/admin/agents/**").hasRole("ADMIN")
 
-                        // AGENT business operations
-                        .requestMatchers("/api/customers/**").hasRole("AGENT")
                         //.requestMatchers("/api/accounts/**").hasRole("AGENT")
                         .requestMatchers("/api/transactions/**").authenticated()
 

@@ -50,7 +50,8 @@ public class CustomerMapper {
                 .pan(customer.getPan())
                 .status(customer.getCustomerStatus())
                 .createdAt(customer.getCreatedAt())
-                .agentId(customer.getAgent())
+                .agentId(customer.getAgent().getAgentId())
+                .agentName(customer.getAgent().getAgentName())
                 .build();
     }
 }

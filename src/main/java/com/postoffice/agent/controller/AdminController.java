@@ -22,9 +22,7 @@ public class AdminController {
     // Create Admin
     @PostMapping
     public ResponseEntity<AdminResponse> createAdmin(@RequestBody AdminRequest request) {
-
         AdminResponse response = adminService.createAdmin(request);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -34,9 +32,7 @@ public class AdminController {
     // Get Admin by ID
     @GetMapping("/{adminId}")
     public ResponseEntity<AdminResponse> getAdminById(@PathVariable Long adminId) {
-
         AdminResponse response = adminService.getAdminById(adminId);
-
         return ResponseEntity.ok(response);
     }
 
@@ -44,9 +40,7 @@ public class AdminController {
     // Get all Admins
     @GetMapping
     public ResponseEntity<List<AdminResponse>> getAllAdmins() {
-
         List<AdminResponse> response = adminService.getAllAdmins();
-
         return ResponseEntity.ok(response);
     }
 
@@ -54,9 +48,7 @@ public class AdminController {
     // Update Admin
     @PutMapping("/{adminId}")
     public ResponseEntity<AdminResponse> updateAdmin(@PathVariable Long adminId, @RequestBody AdminRequest request) {
-
         AdminResponse response = adminService.updateAdmin(adminId, request);
-
         return ResponseEntity.ok(response);
     }
 

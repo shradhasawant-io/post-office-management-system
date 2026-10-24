@@ -21,30 +21,34 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    // CREATE ACCOUNT
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AccountResponse createAccount(
-            @RequestParam Long agentId,
-            @Valid @RequestBody AccountRequest request) {
+    public AccountResponse createAccount(@RequestBody AccountRequest request) {
         return accountService.createAccount(request);
     }
 
+    // GET BY ACCOUNT ID
     @GetMapping("/{accountId}")
     public AccountResponse getAccountById(@PathVariable Long accountId) {
         return accountService.getAccountById(accountId);
     }
 
+    // GET ALL ACCOUNTS
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<AccountResponse> getAllAccounts() {
         return accountService.getAllAccounts();
     }
 
+
+    // UPDATE ACCOUNT
     @PutMapping("/{accountId}")
     public AccountResponse updateAccount(@PathVariable Long accountId, @Valid @RequestBody AccountRequest request) {
         return accountService.updateAccount(accountId, request);
     }
 
+    // GET ACCOUNTS BY AGENT
     @GetMapping("/agents/{agentId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AccountResponse>> getAccountsByAgent(@PathVariable Long agentId) {

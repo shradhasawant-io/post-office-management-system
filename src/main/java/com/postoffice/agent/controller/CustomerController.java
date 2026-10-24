@@ -3,7 +3,6 @@ package com.postoffice.agent.controller;
 import com.postoffice.agent.dto.customer.CustomerRequest;
 import com.postoffice.agent.dto.customer.CustomerResponse;
 import com.postoffice.agent.service.CustomerService;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +19,6 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    // CREATE CUSTOMER
-    @PostMapping
-    public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
-        return customerService.createCustomer(request);
-    }
-
-    // GET ALL CUSTOMERS - ADMIN ONLY
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<CustomerResponse> getAllCustomers() {
@@ -35,13 +27,13 @@ public class CustomerController {
 
     // GET CUSTOMERS BY AGENT ID
     @GetMapping("/{id}")
-    public CustomerResponse getCustomerById(@PathVariable Long id, @RequestParam Long agentId) {
+    public CustomerResponse getCustomerById(@PathVariable Long id) {
         return customerService.getCustomerById(id);
     }
 
     // UPDATE CUSTOMER
     @PutMapping("/{id}")
-    public CustomerResponse updateCustomer(@PathVariable Long id, @RequestParam Long agentId, @RequestBody CustomerRequest request) {
+    public CustomerResponse updateCustomer(@PathVariable Long id, @RequestBody CustomerRequest request) {
         return customerService.updateCustomer(id, request);
     }
 
@@ -56,6 +48,8 @@ public class CustomerController {
     @GetMapping("/agents/{agentId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CustomerResponse>> getCustomersByAgent(@PathVariable Long agentId) {
-        return ResponseEntity.ok(customerService.getCustomersByAgentId(agentId));
+        System.out.println("getCustomersByAgent " + agentId);
+        List<CustomerResponse> customersByAgentId = customerService.getCustomersByAgentId(agentId);
+        return ResponseEntity.ok(customersByAgentId);
     }
 }

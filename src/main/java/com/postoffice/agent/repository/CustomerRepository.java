@@ -44,18 +44,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         """)
     List<Customer> searchCustomersByAgent(
             @Param("keyword") String keyword,
-            @Param("customerId") Long customerId,
             @Param("agentId") Long agentId
     );
 
 
     // Get all customers belonging to a specific agent.
-    List<Customer> findByAgent_AgentId(Long agentId);
+    List<Customer> findAllByAgent_AgentId(Long agentId);
 
 
     // Get a specific customer belonging to a specific agent.
-    Optional<Customer> findByCustomerIdAndAgent_AgentId(
-            Long customerId,
-            Long agentId
-    );
+    Optional<Customer> findByCustomerIdAndAgent_AgentId(Long customerId, Long agentId);
 }

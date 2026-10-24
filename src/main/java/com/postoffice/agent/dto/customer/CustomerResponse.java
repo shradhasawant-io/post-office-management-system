@@ -47,5 +47,7 @@ public class CustomerResponse {
 
     private LocalDateTime createdAt;
 
-    private Agent agentId;
+    private Long agentId;
+
+    private String agentName;
 }

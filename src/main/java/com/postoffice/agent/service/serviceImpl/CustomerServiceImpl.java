@@ -90,7 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerResponse> getCustomersByAgentId(Long agentId) {
 
-        List<Customer> customers = customerRepository.findByAgent_AgentId(agentId);
+        List<Customer> customers = customerRepository.findAllByAgent_AgentId(agentId);
 
         return customers.stream()
                 .map(CustomerMapper::toResponse)
@@ -144,7 +144,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Long agentId = authenticatedAgentService.getAuthenticatedAgentId();
 
-        List<Customer> customers = customerRepository.searchCustomersByAgent(keyword, -1L, agentId);
+        List<Customer> customers = customerRepository.searchCustomersByAgent(keyword, agentId);
 
         return customers.stream()
                 .map(CustomerMapper::toResponse)

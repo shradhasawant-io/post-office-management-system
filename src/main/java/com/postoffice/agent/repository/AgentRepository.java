@@ -10,7 +10,7 @@ public interface AgentRepository extends JpaRepository<Agent, Long> {
 
     boolean existsByAgentUsername(String agentUsername);
 
-    boolean existsByAgentUsernameAndAgentIdNot(String agentUsername, Long agentId);
+    boolean existsByAgentUsernameAndAgentId(String agentUsername, Long agentId);
 
     Optional<Agent> findByAgentUsername(String agentUsername);
 

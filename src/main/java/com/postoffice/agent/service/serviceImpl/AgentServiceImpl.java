@@ -169,7 +169,7 @@ public class AgentServiceImpl implements AgentService {
         }
 
         // 4. Check duplicate username
-        if (agentRepository.existsByAgentUsernameAndAgentIdNot(request.getAgentUsername(), agentId)) {
+        if (agentRepository.existsByAgentUsernameAndAgentId(request.getAgentUsername(), agentId)) {
 
             throw new BusinessException("Agent username already exists");
         }

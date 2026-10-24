@@ -43,9 +43,7 @@ public class TransactionController {
 
     // Get transaction history for an account
     @GetMapping("/account/{transactionAccountId}")
-    public List<TransactionResponse> getTransactionsByAccountId(
-            @PathVariable("transactionAccountId") Long accountId) {
-
+    public List<TransactionResponse> getTransactionsByAccountId(@PathVariable("transactionAccountId") Long accountId) {
         return transactionService.getTransactionsByAccountId(accountId);
     }
 
