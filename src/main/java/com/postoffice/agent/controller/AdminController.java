@@ -5,6 +5,7 @@ import com.postoffice.agent.dto.admin.AdminResponse;
 import com.postoffice.agent.service.AdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class AdminController {
 
     // Get Admin by ID
     @GetMapping("/{adminId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminResponse> getAdminById(@PathVariable Long adminId) {
         AdminResponse response = adminService.getAdminById(adminId);
         return ResponseEntity.ok(response);
@@ -39,6 +41,7 @@ public class AdminController {
 
     // Get all Admins
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AdminResponse>> getAllAdmins() {
         List<AdminResponse> response = adminService.getAllAdmins();
         return ResponseEntity.ok(response);
@@ -47,6 +50,7 @@ public class AdminController {
 
     // Update Admin
     @PutMapping("/{adminId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminResponse> updateAdmin(@PathVariable Long adminId, @RequestBody AdminRequest request) {
         AdminResponse response = adminService.updateAdmin(adminId, request);
         return ResponseEntity.ok(response);
@@ -55,6 +59,7 @@ public class AdminController {
 
     // Deactivate Admin
     @PatchMapping("/{adminId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminResponse> deactivateAdmin(@PathVariable Long adminId) {
 
         AdminResponse response = adminService.deactivateAdmin(adminId);

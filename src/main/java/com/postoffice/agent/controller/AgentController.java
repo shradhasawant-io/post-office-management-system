@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class AgentController {
 
     // CREATE AGENT
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AgentResponse> createAgent(@Valid @RequestBody AgentRequest request) {
 
         log.info("create Agent request");
@@ -38,6 +40,7 @@ public class AgentController {
 
     // GET AGENT BY ID
     @GetMapping("/{agentId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AgentResponse> getAgentById(@PathVariable Long agentId) {
 
         AgentResponse response = agentService.getAgentById(agentId);
@@ -46,12 +49,14 @@ public class AgentController {
 
     // GET ALL AGENTS
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AgentResponse>> getAllAgents() {
         return ResponseEntity.ok(agentService.getAllAgents());
     }
 
     // UPDATE AGENT
     @PutMapping("/{agentId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AgentResponse> updateAgent(@PathVariable Long agentId,
             @Valid @RequestBody AgentRequest request) {
 
@@ -61,6 +66,7 @@ public class AgentController {
 
     // DEACTIVATE AGENT
     @PatchMapping("/{agentId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AgentResponse> deactivateAgent(
             @PathVariable Long agentId) {
 

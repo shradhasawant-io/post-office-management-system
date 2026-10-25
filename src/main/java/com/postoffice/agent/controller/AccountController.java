@@ -23,6 +23,7 @@ public class AccountController {
 
     // CREATE ACCOUNT
     @PostMapping
+    @PreAuthorize("hasRole('AGENT')")
     @ResponseStatus(HttpStatus.CREATED)
     public AccountResponse createAccount(@RequestBody AccountRequest request) {
         return accountService.createAccount(request);
@@ -30,6 +31,7 @@ public class AccountController {
 
     // GET BY ACCOUNT ID
     @GetMapping("/{accountId}")
+    @PreAuthorize("hasRole('AGENT')")
     public AccountResponse getAccountById(@PathVariable Long accountId) {
         return accountService.getAccountById(accountId);
     }
@@ -44,6 +46,7 @@ public class AccountController {
 
     // UPDATE ACCOUNT
     @PutMapping("/{accountId}")
+    @PreAuthorize("hasRole('AGENT')")
     public AccountResponse updateAccount(@PathVariable Long accountId, @Valid @RequestBody AccountRequest request) {
         return accountService.updateAccount(accountId, request);
     }

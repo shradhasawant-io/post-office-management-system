@@ -19,6 +19,14 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
+    // CREATE CUSTOMER
+    @PostMapping
+    @PreAuthorize("hasRole('AGENT')")
+    public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
+        return customerService.createCustomer(request);
+    }
+
+    // GET ALL CUSTOMERS
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<CustomerResponse> getAllCustomers() {
@@ -27,18 +35,21 @@ public class CustomerController {
 
     // GET CUSTOMERS BY AGENT ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('AGENT')")
     public CustomerResponse getCustomerById(@PathVariable Long id) {
         return customerService.getCustomerById(id);
     }
 
     // UPDATE CUSTOMER
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('AGENT')")
     public CustomerResponse updateCustomer(@PathVariable Long id, @RequestBody CustomerRequest request) {
         return customerService.updateCustomer(id, request);
     }
 
     // SEARCH CUSTOMERS
     @GetMapping("/search")
+    @PreAuthorize("hasRole('AGENT')")
     public List<CustomerResponse> searchCustomers(@RequestParam String keyword) {
         return customerService.searchCustomers(keyword);
     }

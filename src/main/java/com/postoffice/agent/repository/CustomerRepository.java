@@ -16,15 +16,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         SELECT DISTINCT c
         FROM Customer c
         LEFT JOIN Account a ON a.customer = c
-        WHERE c.customerId = :customerId
-           OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-           OR LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
-           OR c.mobile LIKE CONCAT('%', :keyword, '%')
-           OR LOWER(a.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        WHERE
+            LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR c.mobile LIKE CONCAT('%', :keyword, '%')
+            OR LOWER(a.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
         """)
     List<Customer> searchCustomers(
-            @Param("keyword") String keyword,
-            @Param("customerId") Long customerId
+            @Param("keyword") String keyword
     );
 
 
@@ -35,8 +34,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         LEFT JOIN Account a ON a.customer = c
         WHERE c.agent.agentId = :agentId
           AND (
-                c.customerId = :customerId
-                OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR c.mobile LIKE CONCAT('%', :keyword, '%')
                 OR LOWER(a.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -53,5 +51,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 
     // Get a specific customer belonging to a specific agent.
-    Optional<Customer> findByCustomerIdAndAgent_AgentId(Long customerId, Long agentId);
+    Optional<Customer> findByCustomerIdAndAgent_AgentId(
+            Long customerId,
+            Long agentId
+    );
 }

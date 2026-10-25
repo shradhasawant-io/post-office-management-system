@@ -23,6 +23,7 @@ public class TransactionController {
 
     // Create a deposit
     @PostMapping("/deposit")
+    @PreAuthorize("hasRole('AGENT')")
     @ResponseStatus(HttpStatus.CREATED)
     public TransactionResponse createDeposit(@RequestBody TransactionRequest request) {
         return transactionService.createTransaction(request);
@@ -30,6 +31,7 @@ public class TransactionController {
 
     // Get a transaction by its database ID
     @GetMapping("/{transactionId}")
+    @PreAuthorize("hasRole('AGENT')")
     public TransactionResponse getTransactionById(@PathVariable Long transactionId) {
         return transactionService.getTransactionById(transactionId);
     }
@@ -43,6 +45,7 @@ public class TransactionController {
 
     // Get transaction history for an account
     @GetMapping("/account/{transactionAccountId}")
+    @PreAuthorize("hasRole('AGENT')")
     public List<TransactionResponse> getTransactionsByAccountId(@PathVariable("transactionAccountId") Long accountId) {
         return transactionService.getTransactionsByAccountId(accountId);
     }
