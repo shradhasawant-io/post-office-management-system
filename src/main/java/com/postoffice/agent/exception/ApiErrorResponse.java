@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Getter
 @Builder
@@ -14,4 +15,5 @@ public class ApiErrorResponse {
     private String error;
     private String message;
     private String path;
+    private Object details;
 }

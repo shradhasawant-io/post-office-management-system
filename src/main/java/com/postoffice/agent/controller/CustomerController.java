@@ -3,6 +3,7 @@ package com.postoffice.agent.controller;
 import com.postoffice.agent.dto.customer.CustomerRequest;
 import com.postoffice.agent.dto.customer.CustomerResponse;
 import com.postoffice.agent.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class CustomerController {
     // CREATE CUSTOMER
     @PostMapping
     @PreAuthorize("hasRole('AGENT')")
-    public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
+    public CustomerResponse createCustomer(@Valid @RequestBody CustomerRequest request) {
         return customerService.createCustomer(request);
     }
 
@@ -43,7 +44,7 @@ public class CustomerController {
     // UPDATE CUSTOMER
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('AGENT')")
-    public CustomerResponse updateCustomer(@PathVariable Long id, @RequestBody CustomerRequest request) {
+    public CustomerResponse updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
         return customerService.updateCustomer(id, request);
     }
 

@@ -5,6 +5,8 @@ import com.postoffice.agent.dto.admin.AdminResponse;
 import com.postoffice.agent.entity.Admin;
 import com.postoffice.agent.enums.AdminStatus;
 import com.postoffice.agent.exception.BusinessException;
+import com.postoffice.agent.exception.ConflictException;
+import com.postoffice.agent.exception.ResourceNotFoundException;
 import com.postoffice.agent.mapper.AdminMapper;
 import com.postoffice.agent.repository.AdminRepository;
 import com.postoffice.agent.service.AdminService;
@@ -44,7 +46,7 @@ public class AdminServiceImpl implements AdminService {
         log.info("Creating the first admin with username: {}", request.getUsername());
 
         if (adminRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Admin username already exists: " + request.getUsername());
+            throw new ConflictException("Admin username already exists");
         }
 
         Admin admin = AdminMapper.toEntity(request);
@@ -68,7 +70,7 @@ public class AdminServiceImpl implements AdminService {
 
         if (adminRepository.existsByUsername(request.getUsername())) {
             log.warn("Admin creation failed. Username already exists: {}", request.getUsername());
-            throw new BusinessException("Admin username already exists");
+            throw new ConflictException("Admin username already exists");
         }
 
         Admin admin = AdminMapper.toEntity(request);
@@ -131,9 +133,7 @@ public class AdminServiceImpl implements AdminService {
                 && !request.getUsername().equals(existingAdmin.getUsername())) {
 
             if (adminRepository.existsByUsername(request.getUsername())) {
-                throw new RuntimeException(
-                        "Admin username already exists: " + request.getUsername()
-                );
+                throw new ResourceNotFoundException("Admin not found with id: " + adminId);
             }
 
             existingAdmin.setUsername(request.getUsername());
@@ -177,7 +177,7 @@ public class AdminServiceImpl implements AdminService {
         if (admin.getAdminStatus() == AdminStatus.INACTIVE) {
 
             log.warn("Admin is already inactive. Admin ID: {}", adminId);
-            throw new RuntimeException("Admin is already inactive");
+            throw new BusinessException("Admin is already inactive");
         }
 
 
