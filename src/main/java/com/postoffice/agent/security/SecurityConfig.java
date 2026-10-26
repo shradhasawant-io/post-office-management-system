@@ -61,6 +61,8 @@ public class SecurityConfig {
                         // First admin creation remains public
                         .requestMatchers(HttpMethod.POST, "/api/admins").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-role").authenticated()
+
                         // Every other request requires authentication
                         .anyRequest().authenticated()
                 )
