@@ -92,3 +92,140 @@ td .btn { margin-right: .25rem; }
   #nav { flex-direction: row; flex-wrap: wrap; }
   #modal-form { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   REPORT FILTER
+   ============================================================ */
+
+.report-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-filter-wrapper {
+  position: relative;
+}
+
+.report-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 190px;
+  background: #ffffff;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  z-index: 1000;
+}
+
+.report-filter-menu[hidden] {
+  display: none;
+}
+
+.report-filter-option {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.report-filter-option:hover,
+.report-filter-option:focus-visible {
+  background: #f2f4f7;
+}
+
+.report-selected-filter {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #d9dee7;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.report-filter-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.report-input-group span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.report-input-group input,
+.report-input-group select {
+  min-width: 190px;
+}
+
+.report-date-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .report-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .report-filter-wrapper,
+  .report-selected-filter,
+  .report-filter-input,
+  .report-filter-input > *,
+  .report-date-group {
+    width: 100%;
+  }
+
+  .report-filter-menu {
+    width: 100%;
+  }
+
+  .report-input-group {
+    width: 100%;
+  }
+
+  .report-input-group input,
+  .report-input-group select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .report-date-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #report-generate-btn,
+  #report-clear-btn {
+    width: 100%;
+  }
+
+}

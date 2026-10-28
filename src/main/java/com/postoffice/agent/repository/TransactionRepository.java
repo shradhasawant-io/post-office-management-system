@@ -1,6 +1,7 @@
 package com.postoffice.agent.repository;
 
 import com.postoffice.agent.entity.Transaction;
+import com.postoffice.agent.enums.PaymentMode;
 import com.postoffice.agent.enums.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -50,6 +51,64 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("type") TransactionType type,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+    SELECT t
+    FROM Transaction t
+    JOIN t.transactionAccountId a
+    JOIN a.customer c
+    JOIN c.agent agent
+    WHERE t.transactionType = :type
+      AND t.transactionDate >= :startDate
+      AND t.transactionDate < :endDate
+      AND agent.agentId = :agentId
+    ORDER BY t.transactionDate DESC, t.createdAt DESC
+    """)
+    List<Transaction> findDepositsInDateRangeForAgent(
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("agentId") Long agentId
+    );
+
+    @Query("""
+    SELECT t
+    FROM Transaction t
+    JOIN t.transactionAccountId a
+    JOIN a.customer c
+    WHERE t.transactionType = :type
+      AND c.agent.agentId = :agentId
+      AND (
+            :accountNumber IS NULL
+            OR LOWER(a.accountNumber) LIKE LOWER(CONCAT('%', :accountNumber, '%'))
+          )
+      AND (
+            :startDate IS NULL
+            OR t.transactionDate >= :startDate
+          )
+      AND (
+            :endDate IS NULL
+            OR t.transactionDate <= :endDate
+          )
+      AND (
+            :amount IS NULL
+            OR t.transactionAmount = :amount
+          )
+      AND (
+            :paymentMode IS NULL
+            OR t.paymentMode = :paymentMode
+          )
+    ORDER BY t.transactionDate DESC, t.createdAt DESC
+    """)
+    List<Transaction> searchDepositsForAgent(
+            @Param("type") TransactionType type,
+            @Param("agentId") Long agentId,
+            @Param("accountNumber") String accountNumber,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("amount") BigDecimal amount,
+            @Param("paymentMode") PaymentMode paymentMode
     );
 
     List<Transaction> findByTransactionAccountId_AccountId(Long accountId);

@@ -23,115 +23,100 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
-                          PasswordEncoder passwordEncoder,
-                          RestAuthenticationEntryPoint authenticationEntryPoint,
-                          RestAccessDeniedHandler accessDeniedHandler) {
+    public SecurityConfig(
+            CustomUserDetailsService customUserDetailsService,
+            PasswordEncoder passwordEncoder,
+            RestAuthenticationEntryPoint authenticationEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler) {
+
         this.customUserDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
-
-    // Authentication provider
-    // UserDetailsService + PasswordEncoder -> DaoAuthenticationProvider
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(customUserDetailsService);
+
         provider.setPasswordEncoder(passwordEncoder);
+
         return provider;
     }
 
-    //AuthenticationManager
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 
-
-    // HTTP Security Configuration
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
         http
 
-                // ------------------------------------------------
                 // CSRF
-                // ------------------------------------------------
                 .csrf(csrf -> csrf.disable())
 
-                // ------------------------------------------------
                 // Authorization
-                // ------------------------------------------------
                 .authorizeHttpRequests(auth -> auth
 
+                        // ==============================
+                        // Swagger
+                        // ==============================
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // ====================================================
-                        // PUBLIC FRONTEND RESOURCES
-                        // ====================================================
-                        //
-                        // Login page must be publicly accessible because
-                        // the user is not authenticated yet.
-
-                        // Static frontend assets must load before the user has credentials
-                        .requestMatchers(HttpMethod.GET,
+                        // ==============================
+                        // PUBLIC FRONTEND
+                        // ==============================
+                        .requestMatchers(
                                 "/",
                                 "/index.html",
                                 "/css/**",
                                 "/js/**",
-                                "/favicon.ico")
-                        .permitAll()
+                                "/images/**",
+                                "/favicon.ico"
+                        ).permitAll()
 
-                        // ====================================================
+                        // ==============================
                         // ROLE VERIFICATION
-                        // ====================================================
-                        //
-                        // The endpoint receives HTTP Basic credentials from
-                        // the frontend and AuthService/AuthServiceImpl checks
-                        // whether the authenticated user's actual role
-                        // matches the selected role.
-                        //
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/auth/verify-role")
-                        .permitAll()
+                        // ==============================
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/auth/verify-role"
+                        ).authenticated()
 
-                        // ====================================================
+                        // ==============================
                         // INITIAL ADMIN CREATION
-                        // ====================================================
-                        //
-                        // Preserve your existing behavior.
-                        //
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/admins")
-                        .permitAll()
+                        // ==============================
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/admins"
+                        ).permitAll()
 
-                        // ====================================================
-                        // ALL OTHER REQUESTS
-                        // ====================================================
+                        // ==============================
+                        // EVERYTHING ELSE
+                        // ==============================
                         .anyRequest().authenticated()
                 )
 
-                // ------------------------------------------------
-                // Exception Handling
-                // ------------------------------------------------
+                // Exception handling
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
 
-                // ------------------------------------------------
-                // HTTP BASIC AUTHENTICATION
-                // ------------------------------------------------
+                // HTTP Basic
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
-
 }

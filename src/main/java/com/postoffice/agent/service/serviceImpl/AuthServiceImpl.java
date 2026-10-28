@@ -2,55 +2,66 @@ package com.postoffice.agent.service.serviceImpl;
 
 import com.postoffice.agent.service.AuthService;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+    private static final String ROLE_AGENT = "ROLE_AGENT";
+
     @Override
-    public void verifyRole(
-            Authentication authentication,
-            String selectedRole) {
+    public String getAuthenticatedRole(Authentication authentication) {
 
+        /*
+         * The user must be authenticated before the role
+         * can be determined.
+         *
+         * AnonymousAuthenticationToken is also considered
+         * authenticated by Spring Security, so it must be
+         * explicitly rejected here.
+         */
         if (authentication == null
-                || !authentication.isAuthenticated()) {
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
 
-            throw new AccessDeniedException(
-                    "Authentication is required."
+            throw new BadCredentialsException(
+                    "Authentication is required. Please provide valid credentials."
             );
         }
 
-        String requiredAuthority;
+        /*
+         * Spring Security has already authenticated the
+         * username/password and populated the user's
+         * granted authorities.
+         *
+         * We determine the application role from those
+         * authorities instead of accepting a role from
+         * the frontend.
+         */
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
 
-        if ("ADMIN".equalsIgnoreCase(selectedRole)) {
+            String authorityName = authority.getAuthority();
 
-            requiredAuthority = "ROLE_ADMIN";
+            if (ROLE_ADMIN.equals(authorityName)) {
+                return "ADMIN";
+            }
 
-        } else if ("AGENT".equalsIgnoreCase(selectedRole)) {
-
-            requiredAuthority = "ROLE_AGENT";
-
-        } else {
-
-            throw new IllegalArgumentException(
-                    "Invalid role. Allowed roles are ADMIN and AGENT."
-            );
+            if (ROLE_AGENT.equals(authorityName)) {
+                return "AGENT";
+            }
         }
 
-        boolean roleMatches =
-                authentication.getAuthorities()
-                        .stream()
-                        .anyMatch(authority ->
-                                authority.getAuthority()
-                                        .equals(requiredAuthority)
-                        );
-
-        if (!roleMatches) {
-
-            throw new AccessDeniedException(
-                    "Authenticated credentials do not match the selected role."
-            );
-        }
+        /*
+         * The credentials were authenticated, but the user
+         * does not have one of the application's valid roles.
+         */
+        throw new AccessDeniedException(
+                "Authenticated user does not have a valid application role."
+        );
     }
 }

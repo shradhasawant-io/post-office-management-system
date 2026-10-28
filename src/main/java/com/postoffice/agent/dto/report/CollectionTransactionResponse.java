@@ -1,6 +1,7 @@
 package com.postoffice.agent.dto.report;
 
 import com.postoffice.agent.enums.PaymentMode;
+import com.postoffice.agent.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +27,8 @@ public class CollectionTransactionResponse {
     private BigDecimal amount;
 
     private PaymentMode paymentMode;
+
+    private TransactionType transactionType;
 
     private String remarks;
 }
