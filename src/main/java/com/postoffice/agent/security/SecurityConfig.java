@@ -49,28 +49,86 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    //HTTP Security configuration
+
+    // HTTP Security Configuration
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
         http
+
+                // ------------------------------------------------
+                // CSRF
+                // ------------------------------------------------
                 .csrf(csrf -> csrf.disable())
 
+                // ------------------------------------------------
+                // Authorization
+                // ------------------------------------------------
                 .authorizeHttpRequests(auth -> auth
 
-                        // First admin creation remains public
-                        .requestMatchers(HttpMethod.POST, "/api/admins").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-role").authenticated()
+                        // ====================================================
+                        // PUBLIC FRONTEND RESOURCES
+                        // ====================================================
+                        //
+                        // Login page must be publicly accessible because
+                        // the user is not authenticated yet.
 
-                        // Every other request requires authentication
+                        // Static frontend assets must load before the user has credentials
+                        .requestMatchers(HttpMethod.GET,
+                                "/",
+                                "/index.html",
+                                "/css/**",
+                                "/js/**",
+                                "/favicon.ico")
+                        .permitAll()
+
+                        // ====================================================
+                        // ROLE VERIFICATION
+                        // ====================================================
+                        //
+                        // The endpoint receives HTTP Basic credentials from
+                        // the frontend and AuthService/AuthServiceImpl checks
+                        // whether the authenticated user's actual role
+                        // matches the selected role.
+                        //
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/verify-role")
+                        .permitAll()
+
+                        // ====================================================
+                        // INITIAL ADMIN CREATION
+                        // ====================================================
+                        //
+                        // Preserve your existing behavior.
+                        //
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/admins")
+                        .permitAll()
+
+                        // ====================================================
+                        // ALL OTHER REQUESTS
+                        // ====================================================
                         .anyRequest().authenticated()
                 )
+
+                // ------------------------------------------------
+                // Exception Handling
+                // ------------------------------------------------
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
 
+                // ------------------------------------------------
+                // HTTP BASIC AUTHENTICATION
+                // ------------------------------------------------
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
