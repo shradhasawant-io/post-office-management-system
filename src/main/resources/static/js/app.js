@@ -1803,9 +1803,20 @@ function agentAccounts() {
       accountForm(
         null,
         null,
-        (id) =>
-          id &&
-          lookup(id)
+        () => {
+          const selectedFilter = $('#account-filter')?.value;
+          const currentValue = $('#account-filter-value')?.value?.trim();
+
+          if (selectedFilter && currentValue) {
+            runSearch();
+          } else {
+            $('#account-out').innerHTML = `
+              <div class="card empty">
+                Account saved. Select a filter and value, then click Find to view matching accounts.
+              </div>
+            `;
+          }
+        }
       );
 
   body(
@@ -1813,146 +1824,245 @@ function agentAccounts() {
       <div class="card toolbar">
 
         <label>
-          Account ID
+          Filter
 
-          <input
-            id="acc-id"
-            type="number"
-            min="1">
+          <select id="account-filter">
+            <option value="">Select filter</option>
+            <option value="ACCOUNT_NUMBER">Account Number</option>
+            <option value="AMOUNT">Amount</option>
+            <option value="DATE">Date</option>
+            <option value="PAYMENT_MODE">Payment Mode</option>
+            <option value="ACCOUNT_STATUS">Account Status</option>
+            <option value="ACCOUNT_TYPE">Account Type</option>
+            <option value="BALANCE">Balance</option>
+          </select>
         </label>
 
-        <button
-          class="btn primary"
-          id="acc-go">
+        <div id="account-filter-value-wrap">
+          <label>
+            Value
+            <input
+              id="account-filter-value"
+              type="text"
+              placeholder="Select a filter first"
+              disabled>
+          </label>
+        </div>
+
+        <button class="btn primary" id="account-find">
           Find
+        </button>
+
+        <button class="btn" id="account-clear">
+          Clear
         </button>
 
       </div>
 
-      <div id="acc-out"></div>
+      <div id="account-filter-help" class="muted">
+        Select one filter, enter or select its value, then click Find.
+      </div>
+
+      <div id="account-out"></div>
     `
   );
 
+  const filter = $('#account-filter');
+  const valueWrap = $('#account-filter-value-wrap');
 
-  async function lookup(id) {
-
-    const out =
-      $('#acc-out');
-
-    out.innerHTML =
-      '<div class="empty">Loading…</div>';
-
-    try {
-
-      const a =
-        await api(
-          'GET',
-          `/api/accounts/${id}`
-        );
-
-      out.innerHTML =
-        table(
-
-          accountCols,
-
-          [a],
-
-          () =>
-            act(
-              'edit',
-              0,
-              'Edit'
-            ) +
-
-            act(
-              'deposit',
-              0,
-              'Deposit'
-            ) +
-
-            act(
-              'history',
-              0,
-              'History'
-            )
-        );
-
-      out.onclick =
-        (e) => {
-
-          const b =
-            e.target.closest(
-              '[data-act]'
-            );
-
-          if (!b) {
-            return;
-          }
-
-          if (
-            b.dataset.act ===
-            'edit'
-          ) {
-
-            accountForm(
-              a,
-              null,
-              () =>
-                lookup(id)
-            );
-          }
-
-          if (
-            b.dataset.act ===
-            'deposit'
-          ) {
-
-            depositForm(
-              a.accountId,
-              () =>
-                lookup(id)
-            );
-          }
-
-          if (
-            b.dataset.act ===
-            'history'
-          ) {
-
-            showView(
-              'transactions',
-              {
-                accountId:
-                  a.accountId
-              }
-            );
-          }
-        };
-
-    } catch (e) {
-
-      out.innerHTML =
-        `
-          <div class="card error">
-            ${esc(e.message)}
-          </div>
-        `;
+  function renderFilterValue(filterType) {
+    if (!filterType) {
+      valueWrap.innerHTML = `
+        <label>
+          Value
+          <input
+            id="account-filter-value"
+            type="text"
+            placeholder="Select a filter first"
+            disabled>
+        </label>
+      `;
+      return;
     }
+
+    if (filterType === 'PAYMENT_MODE') {
+      valueWrap.innerHTML = `
+        <label>
+          Payment Mode
+          <select id="account-filter-value">
+            <option value="">Select payment mode</option>
+            <option value="CASH">CASH</option>
+            <option value="UPI">UPI</option>
+            <option value="BANK_TRANSFER">BANK TRANSFER</option>
+          </select>
+        </label>
+      `;
+      return;
+    }
+
+    if (filterType === 'ACCOUNT_STATUS') {
+      valueWrap.innerHTML = `
+        <label>
+          Account Status
+          <select id="account-filter-value">
+            <option value="">Select account status</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </label>
+      `;
+      return;
+    }
+
+    if (filterType === 'ACCOUNT_TYPE') {
+      valueWrap.innerHTML = `
+        <label>
+          Account Type
+          <select id="account-filter-value">
+            <option value="">Select account type</option>
+            <option value="DAILY_SAVING">Daily Saving</option>
+            <option value="MONTHLY_SAVING">Monthly Saving</option>
+          </select>
+        </label>
+      `;
+      return;
+    }
+
+    let type = 'text';
+    let step = '';
+    let min = '';
+    let placeholder = 'Enter value';
+
+    if (filterType === 'AMOUNT') {
+      type = 'number';
+      step = '0.01';
+      min = '0';
+      placeholder = 'Enter amount';
+    } else if (filterType === 'BALANCE') {
+      type = 'number';
+      step = '0.01';
+      min = '0';
+      placeholder = 'Enter balance';
+    } else if (filterType === 'DATE') {
+      type = 'date';
+      placeholder = '';
+    } else if (filterType === 'ACCOUNT_NUMBER') {
+      placeholder = 'Enter account number';
+    }
+
+    valueWrap.innerHTML = `
+      <label>
+        Value
+        <input
+          id="account-filter-value"
+          type="${type}"
+          ${step ? `step="${step}"` : ''}
+          ${min ? `min="${min}"` : ''}
+          placeholder="${placeholder}">
+      </label>
+    `;
+
+    $('#account-filter-value')?.focus();
   }
 
+  filter.onchange = () => {
+    renderFilterValue(filter.value);
+    $('#account-filter-help').textContent = filter.value
+      ? 'Enter or select a value for the chosen filter, then click Find.'
+      : 'Select one filter, enter or select its value, then click Find.';
+    $('#account-out').innerHTML = '';
+  };
 
-  $('#acc-go').onclick =
-    () => {
+  $('#account-find').onclick = () => runSearch();
 
-      const id =
-        $('#acc-id').value;
+  $('#account-clear').onclick = () => {
+    filter.value = '';
+    renderFilterValue('');
+    $('#account-out').innerHTML = '';
+    $('#account-filter-help').textContent =
+      'Select one filter, enter or select its value, then click Find.';
+  };
 
-      if (id) {
-        lookup(id);
+  async function runSearch() {
+    const selectedFilter = filter.value;
+    const valueInput = $('#account-filter-value');
+    const currentValue = valueInput?.value?.trim();
+
+    if (!selectedFilter) {
+      toast('Please select a filter.');
+      return;
+    }
+
+    if (!currentValue) {
+      toast('Please enter or select a filter value.');
+      valueInput?.focus();
+      return;
+    }
+
+    if (
+      (selectedFilter === 'AMOUNT' || selectedFilter === 'BALANCE') &&
+      (!Number.isFinite(Number(currentValue)) || Number(currentValue) < 0)
+    ) {
+      toast('Please enter a valid non-negative amount.');
+      valueInput?.focus();
+      return;
+    }
+
+    const out = $('#account-out');
+    out.innerHTML = '<div class="empty">Loading…</div>';
+
+    try {
+      const params = new URLSearchParams();
+      params.set('filter', selectedFilter);
+      params.set('value', currentValue);
+
+      const rows = await api(
+        'GET',
+        `/api/accounts/search?${params.toString()}`
+      );
+
+      if (!Array.isArray(rows)) {
+        throw new Error('Unexpected response from the accounts search API.');
       }
-    };
-}
 
+      out.innerHTML = table(
+        accountCols,
+        rows,
+        (a, i) =>
+          act('edit', i, 'Edit') +
+          act('deposit', i, 'Deposit') +
+          act('history', i, 'History')
+      );
+
+      bindActions(rows, {
+        edit: (a) =>
+          accountForm(
+            a,
+            null,
+            () => runSearch()
+          ),
+
+        deposit: (a) =>
+          depositForm(
+            a.accountId,
+            () => runSearch()
+          ),
+
+        history: (a) =>
+          showView(
+            'transactions',
+            { accountId: a.accountId }
+          )
+      });
+    } catch (e) {
+      out.innerHTML = `
+        <div class="card error">
+          ${esc(e.message)}
+        </div>
+      `;
+    }
+  }
+}
 
 /*
  * Agent transaction history.

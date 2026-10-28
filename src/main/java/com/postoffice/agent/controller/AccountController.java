@@ -57,4 +57,17 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> getAccountsByAgent(@PathVariable Long agentId) {
         return ResponseEntity.ok(accountService.getAccountsByAgentId(agentId));
     }
+
+    // Search Accounts
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('AGENT')")
+    public List<AccountResponse> searchAccounts(
+            @RequestParam String filter,
+            @RequestParam String value) {
+
+        return accountService.searchAccounts(
+                filter,
+                value
+        );
+    }
 }

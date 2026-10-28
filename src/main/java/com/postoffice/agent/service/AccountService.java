@@ -16,4 +16,6 @@ public interface AccountService {
     AccountResponse updateAccount(Long accountId, AccountRequest request);
 
     List<AccountResponse> getAccountsByAgentId(Long agentId);
+
+    List<AccountResponse> searchAccounts(String filter, String value);
 }
