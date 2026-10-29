@@ -1,5 +1,6 @@
 package com.postoffice.agent.dto.agent;
 
+import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,4 +15,7 @@ public class AgentRequest {
     private String password;
 
     private String agentName;
+
+    @Email(message = "Enter a valid recovery email address")
+    private String email;
 }

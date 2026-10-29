@@ -50,8 +50,7 @@ public class TransactionController {
         return transactionService.getTransactionsByAccountId(accountId);
     }
 
-    // Get transaction history by the customer-facing account number.
-    // The service query restricts the lookup to the authenticated agent's accounts.
+    // Get transaction history by the customer account number
     @GetMapping("/account-number/{accountNumber}")
     @PreAuthorize("hasRole('AGENT')")
     public List<TransactionResponse> getTransactionsByAccountNumber(

@@ -61,13 +61,7 @@ public class AccountController {
     // Search Accounts
     @GetMapping("/search")
     @PreAuthorize("hasRole('AGENT')")
-    public List<AccountResponse> searchAccounts(
-            @RequestParam String filter,
-            @RequestParam String value) {
-
-        return accountService.searchAccounts(
-                filter,
-                value
-        );
+    public List<AccountResponse> searchAccounts(@RequestParam String filter, @RequestParam String value) {
+        return accountService.searchAccounts(filter, value);
     }
 }

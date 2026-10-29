@@ -22,6 +22,8 @@ public class AdminResponse {
 
     private String adminName;
 
+    private String email;
+
     private AdminStatus adminStatus;
 
     private LocalDateTime createdAt;

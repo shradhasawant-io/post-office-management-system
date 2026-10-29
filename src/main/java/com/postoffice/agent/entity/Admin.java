@@ -28,6 +28,9 @@ public class Admin {
     @Column(name = "admin_name", nullable = false, length = 100)
     private String adminName;
 
+    @Column(name = "email", length = 254)
+    private String email;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

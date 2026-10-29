@@ -28,6 +28,9 @@ public class Agent {
     @Column(nullable = false, length = 100)
     private String agentName;
 
+    @Column(name = "email", length = 254)
+    private String email;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

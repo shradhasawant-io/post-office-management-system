@@ -74,16 +74,25 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // ==============================
-                        // PUBLIC FRONTEND
-                        // ==============================
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/forget-password.html",
+                                "/reset-password.html",
+                                "/favicon.ico"
+                        ).permitAll()
+
+                        // Public frontend resources required by these pages
+                        .requestMatchers(
                                 "/css/**",
                                 "/js/**",
-                                "/images/**",
-                                "/favicon.ico"
+                                "/images/**"
+                        ).permitAll()
+
+                        // Public password recovery APIs
+                        .requestMatchers(
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password"
                         ).permitAll()
 
                         // ==============================

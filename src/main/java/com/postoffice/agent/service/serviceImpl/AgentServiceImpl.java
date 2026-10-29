@@ -76,9 +76,9 @@ public class AgentServiceImpl implements AgentService {
         agent.setPassword(passwordEncoder.encode(request.getPassword()));
 
 
-         //Store which Admin created this Agent.
-         // Admin A creates Agent X
-         // Agent X.createdBy = Admin A
+        //Store which Admin created this Agent.
+        // Admin A creates Agent X
+        // Agent X.createdBy = Admin A
         agent.setCreatedBy(admin);
 
         // Save Agent
@@ -177,8 +177,11 @@ public class AgentServiceImpl implements AgentService {
         // 5. Update username
         agent.setAgentUsername(request.getAgentUsername());
 
-        // 6. Update name
+        // 6. Update name and recovery email
         agent.setAgentName(request.getAgentName());
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            agent.setEmail(request.getEmail().trim());
+        }
 
         // 7. Update password only if a new password is provided
         if (request.getPassword() != null && !request.getPassword().isBlank()) {

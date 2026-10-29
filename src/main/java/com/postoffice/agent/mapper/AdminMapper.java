@@ -16,6 +16,7 @@ public class AdminMapper {
                 .username(request.getUsername())
                 .password(request.getPassword())
                 .adminName(request.getAdminName())
+                .email(request.getEmail())
                 .build();
     }
 
@@ -25,6 +26,7 @@ public class AdminMapper {
                 .adminId(admin.getAdminId())
                 .username(admin.getUsername())
                 .adminName(admin.getAdminName())
+                .email(admin.getEmail())
                 .adminStatus(admin.getAdminStatus())
                 .createdAt(admin.getCreatedAt())
                 .updatedAt(admin.getUpdatedAt())

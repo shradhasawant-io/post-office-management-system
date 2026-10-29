@@ -139,6 +139,11 @@ public class AdminServiceImpl implements AdminService {
             existingAdmin.setUsername(request.getUsername());
         }
 
+        // Update recovery email when supplied. Existing accounts may initially have no email.
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            existingAdmin.setEmail(request.getEmail().trim());
+        }
+
         // Update admin name
         if (request.getAdminName() != null
                 && !request.getAdminName().isBlank()) {

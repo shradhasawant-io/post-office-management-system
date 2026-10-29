@@ -16,6 +16,8 @@ public class AgentResponse {
 
     private String agentName;
 
+    private String email;
+
     private AgentStatus agentStatus;
 
     private LocalDateTime createdAt;

@@ -1089,6 +1089,13 @@ const agentFields =
     },
 
     {
+      name: 'email',
+      label: 'Recovery email',
+      type: 'email',
+      required: !editing
+    },
+
+    {
       name:
         'password',
 
@@ -1520,6 +1527,12 @@ async function adminAdmins() {
       name: 'username',
       label: 'Username',
       required: true
+    },
+    {
+      name: 'email',
+      label: 'Recovery email',
+      type: 'email',
+      required: !editing
     },
     {
       name: 'password',
@@ -3777,99 +3790,9 @@ $('#login-form').onsubmit =
  * POST /api/admins is intentionally public
  * on the backend to bootstrap the first admin.
  */
-$('#first-admin-btn').onclick =
-  () =>
-    openForm({
-
-      title:
-        'Create first admin',
-
-      fields: [
-
-        {
-          name:
-            'adminName',
-
-          label:
-            'Full name',
-
-          required:
-            true
-        },
-
-        {
-          name:
-            'username',
-
-          label:
-            'Username',
-
-          required:
-            true
-        },
-
-        {
-          name:
-            'password',
-
-          label:
-            'Password',
-
-          type:
-            'password',
-
-          required:
-            true,
-
-          full:
-            true
-        }
-
-      ],
-
-      onSubmit:
-        async (p) => {
-
-          const res =
-            await fetch(
-              '/api/admins',
-              {
-                method:
-                  'POST',
-
-                headers: {
-                  'Content-Type':
-                    'application/json'
-                },
-
-                body:
-                  JSON.stringify(p)
-              }
-            );
-
-
-          if (!res.ok) {
-
-            throw new Error(
-
-              (
-                await res
-                  .json()
-                  .catch(
-                    () => ({})
-                  )
-              ).message ||
-
-              'Could not create admin'
-            );
-          }
-
-
-          toast(
-            'Admin created – you can log in now'
-          );
-        }
-    });
+$('#forget-password').onclick = () => {
+  window.location.href = '/forget-password.html';
+};
 
 
 /* ------------------------------------------------------------

@@ -12,7 +12,7 @@ public class AgentMapper {
                 .agentUsername(request.getAgentUsername())
                 .password(request.getPassword())
                 .agentName(request.getAgentName())
-                // Add your other AgentRequest fields here
+                .email(request.getEmail())
                 .build();
     }
 
@@ -21,6 +21,7 @@ public class AgentMapper {
         return AgentResponse.builder()
                 .agentId(agent.getAgentId())
                 .agentName(agent.getAgentName())
+                .email(agent.getEmail())
                 .agentUsername(agent.getAgentUsername())
                 .agentStatus(agent.getAgentStatus())
                 .createdAt(agent.getCreatedAt())

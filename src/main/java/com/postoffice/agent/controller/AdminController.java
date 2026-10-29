@@ -3,6 +3,7 @@ package com.postoffice.agent.controller;
 import com.postoffice.agent.dto.admin.AdminRequest;
 import com.postoffice.agent.dto.admin.AdminResponse;
 import com.postoffice.agent.service.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class AdminController {
 
     // Create Admin
     @PostMapping
-    public ResponseEntity<AdminResponse> createAdmin(@RequestBody AdminRequest request) {
+    public ResponseEntity<AdminResponse> createAdmin(@Valid @RequestBody AdminRequest request) {
         AdminResponse response = adminService.createAdmin(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -51,7 +52,7 @@ public class AdminController {
     // Update Admin
     @PutMapping("/{adminId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AdminResponse> updateAdmin(@PathVariable Long adminId, @RequestBody AdminRequest request) {
+    public ResponseEntity<AdminResponse> updateAdmin(@PathVariable Long adminId, @Valid @RequestBody AdminRequest request) {
         AdminResponse response = adminService.updateAdmin(adminId, request);
         return ResponseEntity.ok(response);
     }
