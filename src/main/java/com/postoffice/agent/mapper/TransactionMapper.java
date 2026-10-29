@@ -10,10 +10,18 @@ public class TransactionMapper {
     public static Transaction toEntity(TransactionRequest request) {
 
         return Transaction.builder()
+                .idempotencyKey(normalizeIdempotencyKey(request.getIdempotencyKey()))
                 .transactionAmount(request.getTransactionAmount())
                 .paymentMode(request.getPaymentMode())
                 .remarks(request.getRemarks())
                 .build();
+    }
+
+    private static String normalizeIdempotencyKey(String key) {
+        if (key == null || key.isBlank()) {
+            return null;
+        }
+        return key.trim();
     }
 
     public static TransactionResponse toResponse(Transaction transaction) {
@@ -21,6 +29,7 @@ public class TransactionMapper {
         return TransactionResponse.builder()
                 .transactionId(transaction.getTransactionId())
                 .transactionAccountId(transaction.getTransactionAccountId().getAccountId())
+                .accountNumber(transaction.getTransactionAccountId().getAccountNumber())
                 .transactionDate(transaction.getTransactionDate())
                 .transactionType(transaction.getTransactionType())
                 .transactionAmount(transaction.getTransactionAmount())

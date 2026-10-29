@@ -10,8 +10,21 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    Optional<Transaction> findByIdempotencyKey(String idempotencyKey);
+
+    long countByTransactionAccountId_AccountIdAndTransactionTypeAndTransactionIdLessThanEqual(
+            Long accountId,
+            TransactionType transactionType,
+            Long transactionId
+    );
+
+    List<Transaction> findByTransactionAccountId_AccountIdOrderByTransactionIdAsc(
+            Long accountId
+    );
     //Calculate the total amount for a transaction type on one specific date
     @Query("""
        SELECT COALESCE(SUM(t.transactionAmount), 0)

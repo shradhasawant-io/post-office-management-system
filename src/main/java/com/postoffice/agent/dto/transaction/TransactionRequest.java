@@ -19,6 +19,11 @@ public class TransactionRequest {
 
     private Long transactionAccountId;
 
+    /**
+     * Reuse the same key when retrying the same deposit request.
+     */
+    private String idempotencyKey;
+
     private BigDecimal transactionAmount;
 
     private PaymentMode paymentMode;

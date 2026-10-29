@@ -25,6 +25,13 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionId;
 
+    /**
+     * Stable key supplied by the client to make retries of the same deposit safe.
+     * Nullable to preserve compatibility with existing clients and old rows.
+     */
+    @Column(name = "idempotency_key", unique = true, length = 100)
+    private String idempotencyKey;
+
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account transactionAccountId;

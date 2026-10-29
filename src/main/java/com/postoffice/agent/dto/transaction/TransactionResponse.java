@@ -22,7 +22,16 @@ public class TransactionResponse {
 
     private Long transactionId;
 
+    /**
+     * Sequential number of this account's successful deposit transaction.
+     */
+    private Long installmentCount;
+
+    /** Internal database ID retained for backward compatibility. */
     private Long transactionAccountId;
+
+    /** Customer-facing account number used in the UI. */
+    private String accountNumber;
 
     private LocalDate transactionDate;
 

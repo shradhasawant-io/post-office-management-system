@@ -43,11 +43,20 @@ public class TransactionController {
         return transactionService.getAllTransactions();
     }
 
-    // Get transaction history for an account
+    // Get transaction history by internal account ID (kept for backward compatibility)
     @GetMapping("/account/{transactionAccountId}")
     @PreAuthorize("hasRole('AGENT')")
     public List<TransactionResponse> getTransactionsByAccountId(@PathVariable("transactionAccountId") Long accountId) {
         return transactionService.getTransactionsByAccountId(accountId);
+    }
+
+    // Get transaction history by the customer-facing account number.
+    // The service query restricts the lookup to the authenticated agent's accounts.
+    @GetMapping("/account-number/{accountNumber}")
+    @PreAuthorize("hasRole('AGENT')")
+    public List<TransactionResponse> getTransactionsByAccountNumber(
+            @PathVariable String accountNumber) {
+        return transactionService.getTransactionsByAccountNumber(accountNumber);
     }
 
     // Get transaction by agent

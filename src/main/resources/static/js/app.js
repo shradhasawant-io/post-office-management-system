@@ -727,6 +727,12 @@ function depositForm(
   onDone
 ) {
 
+  // Reuse this key for repeated submits from the same open deposit form.
+  const idempotencyKey =
+    (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function')
+      ? globalThis.crypto.randomUUID()
+      : `deposit-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
   openForm({
 
     title:
@@ -801,6 +807,8 @@ function depositForm(
 
     onSubmit:
       async (p) => {
+
+        p.idempotencyKey = idempotencyKey;
 
         await api(
           'POST',
@@ -940,9 +948,9 @@ const txCols = [
   ],
 
   [
-    'Account',
+    'Account Number',
     (t) =>
-      t.transactionAccountId
+      esc(t.accountNumber ?? t.transactionAccountId ?? '—')
   ],
 
   [
@@ -955,6 +963,14 @@ const txCols = [
     'Type',
     (t) =>
       badge(t.transactionType)
+  ],
+
+  [
+    'Installment Count',
+    (t) =>
+      t.installmentCount == null
+        ? '—'
+        : esc(t.installmentCount)
   ],
 
   [
@@ -2051,7 +2067,10 @@ function agentAccounts() {
         history: (a) =>
           showView(
             'transactions',
-            { accountId: a.accountId }
+            {
+              accountId: a.accountId,
+              accountNumber: a.accountNumber
+            }
           )
       });
     } catch (e) {
@@ -2086,14 +2105,16 @@ function agentTransactions(
       <div class="card toolbar">
 
         <label>
-          Account ID
+          Account Number
 
           <input
             id="tx-acc"
-            type="number"
-            min="1"
+            type="text"
+            maxlength="18"
+            autocomplete="off"
+            placeholder="Enter customer account number"
             value="${esc(
-              ctx.accountId ?? ''
+              ctx.accountNumber ?? ''
             )}">
         </label>
 
@@ -2112,10 +2133,12 @@ function agentTransactions(
 
   async function load() {
 
-    const id =
-      $('#tx-acc').value;
+    const accountNumber =
+      $('#tx-acc').value.trim();
 
-    if (!id) {
+    if (!accountNumber) {
+      $('#tx-out').innerHTML =
+        '<div class="card error">Enter an account number to load transaction history.</div>';
       return;
     }
 
@@ -2130,7 +2153,7 @@ function agentTransactions(
 
           await api(
             'GET',
-            `/api/transactions/account/${id}`
+            `/api/transactions/account-number/${encodeURIComponent(accountNumber)}`
           )
         );
 
@@ -2149,14 +2172,11 @@ function agentTransactions(
   $('#add').onclick =
     () =>
       depositForm(
-        $('#tx-acc').value || null,
-
-        (id) => {
-
-          $('#tx-acc').value =
-            id;
-
-          load();
+        ctx.accountId ?? null,
+        () => {
+          if ($('#tx-acc').value.trim()) {
+            load();
+          }
         }
       );
 
@@ -2165,7 +2185,7 @@ function agentTransactions(
     load;
 
 
-  if (ctx.accountId) {
+  if (ctx.accountNumber) {
     load();
   }
 }
