@@ -3876,41 +3876,65 @@ $('#first-admin-btn').onclick =
    RESTORE SESSION
    ------------------------------------------------------------ */
 
-(() => {
+(async () => {
 
   try {
 
-    const s =
-      JSON.parse(
-        sessionStorage.getItem(
-          'session'
-        ) ||
-        'null'
-      );
+    const s = JSON.parse(
+      sessionStorage.getItem('session') || 'null'
+    );
 
-
-    if (
-      s?.auth &&
-      (
-        s.role === 'ADMIN' ||
-        s.role === 'AGENT'
-      )
-    ) {
-
-      Object.assign(
-        state,
-        s
-      );
-
-      mountApp();
+    // Never trust the role stored in browser storage. It can be edited
+    // by the user, so ask Spring Security to verify the saved Basic
+    // credentials and return the authorities-derived role again.
+    if (!s?.auth || !s?.username) {
+      sessionStorage.removeItem('session');
+      return;
     }
+
+    const response = await api(
+      'POST',
+      '/api/auth/verify-role',
+      undefined,
+      s.auth
+    );
+
+    const verifiedRole = normalizeRole(
+      response?.role ?? response?.data?.role ??
+      (typeof response === 'string' ? response : null)
+    );
+
+    if (!verifiedRole) {
+      throw new ApiError('The server did not return a valid user role.');
+    }
+
+    Object.assign(state, {
+      auth: s.auth,
+      role: verifiedRole,
+      username: s.username
+    });
+
+    // Replace any modified/stale role in sessionStorage with the
+    // role verified by the backend.
+    sessionStorage.setItem('session', JSON.stringify({
+      auth: s.auth,
+      role: verifiedRole,
+      username: s.username
+    }));
+
+    mountApp();
 
   } catch {
 
-    /*
-     * Corrupt session data:
-     * simply fall back to login.
-     */
+    // Invalid/revoked credentials or corrupt browser storage: return
+    // to the login screen instead of mounting a guessed dashboard.
+    sessionStorage.removeItem('session');
+    Object.assign(state, {
+      auth: null,
+      role: null,
+      username: null,
+      view: null
+    });
   }
 
 })();
