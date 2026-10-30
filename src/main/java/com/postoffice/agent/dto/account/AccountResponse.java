@@ -25,7 +25,12 @@ public class AccountResponse {
 
     private String accountNumber;
 
+    /** Internal customer primary key retained for API compatibility. */
     private Long customerId;
+
+    private String customerName;
+
+    private String customerCode;
 
     private AccountType accountType;
 

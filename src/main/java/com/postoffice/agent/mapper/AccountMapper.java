@@ -24,6 +24,8 @@ public class AccountMapper {
                 .accountId(account.getAccountId())
                 .accountNumber(account.getAccountNumber())
                 .customerId(account.getCustomer().getCustomerId())
+                .customerName(account.getCustomer().getName())
+                .customerCode(account.getCustomer().getCustomerCode())
                 .accountType(account.getAccountType())
                 .depositAmount(account.getDepositAmount())
                 .frequency(account.getFrequency())

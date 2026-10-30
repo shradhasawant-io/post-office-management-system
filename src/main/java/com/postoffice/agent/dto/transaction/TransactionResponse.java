@@ -33,6 +33,10 @@ public class TransactionResponse {
     /** Customer-facing account number used in the UI. */
     private String accountNumber;
 
+    private String customerName;
+
+    private String customerCode;
+
     private LocalDate transactionDate;
 
     private TransactionType transactionType;

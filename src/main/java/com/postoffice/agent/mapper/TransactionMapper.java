@@ -30,6 +30,8 @@ public class TransactionMapper {
                 .transactionId(transaction.getTransactionId())
                 .transactionAccountId(transaction.getTransactionAccountId().getAccountId())
                 .accountNumber(transaction.getTransactionAccountId().getAccountNumber())
+                .customerName(transaction.getTransactionAccountId().getCustomer().getName())
+                .customerCode(transaction.getTransactionAccountId().getCustomer().getCustomerCode())
                 .transactionDate(transaction.getTransactionDate())
                 .transactionType(transaction.getTransactionType())
                 .transactionAmount(transaction.getTransactionAmount())

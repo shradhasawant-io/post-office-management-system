@@ -638,7 +638,7 @@ function accountForm(
 
       {
         name: 'customerId',
-        label: 'Customer ID',
+        label: 'Customer ID (internal)',
         type: 'number',
         required: true,
         readonly:
@@ -833,12 +833,7 @@ function depositForm(
 const customerCols = [
 
   [
-    'ID',
-    (c) => c.id
-  ],
-
-  [
-    'Code',
+    'Customer Code',
     (c) =>
       esc(c.customerCode)
   ],
@@ -884,21 +879,21 @@ const customerCols = [
 const accountCols = [
 
   [
-    'ID',
-    (a) =>
-      a.accountId
-  ],
-
-  [
-    'Number',
+    'Account Number',
     (a) =>
       esc(a.accountNumber)
   ],
 
   [
-    'Customer',
+    'Customer Name',
     (a) =>
-      a.customerId
+      esc(a.customerName ?? '—')
+  ],
+
+  [
+    'Customer Code',
+    (a) =>
+      esc(a.customerCode ?? '—')
   ],
 
   [
@@ -950,7 +945,19 @@ const txCols = [
   [
     'Account Number',
     (t) =>
-      esc(t.accountNumber ?? t.transactionAccountId ?? '—')
+      esc(t.accountNumber ?? '—')
+  ],
+
+  [
+    'Customer Name',
+    (t) =>
+      esc(t.customerName ?? '—')
+  ],
+
+  [
+    'Customer Code',
+    (t) =>
+      esc(t.customerCode ?? '—')
   ],
 
   [
