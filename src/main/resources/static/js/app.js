@@ -570,11 +570,6 @@ const customerFields = [
     name: 'pan',
     label: 'PAN'
   },
-
-  {
-    name: 'customerCode',
-    label: 'Customer code'
-  }
 ];
 
 
@@ -647,16 +642,6 @@ function accountForm(
             customerId
           )
       },
-
-      {
-        name: 'accountNumber',
-        label: 'Account number',
-        required:
-          !existing,
-        readonly:
-          !!existing
-      },
-
       {
         name: 'accountType',
         label: 'Account type',
@@ -723,7 +708,7 @@ function accountForm(
 
 
 function depositForm(
-  accountId,
+  accountNumber,
   onDone
 ) {
 
@@ -742,19 +727,22 @@ function depositForm(
 
       {
         name:
-          'transactionAccountId',
+          'transactionAccountNumber',
 
         label:
-          'Account ID',
+          'Account Number',
 
         type:
-          'number',
+          'text',
+
+        maxlength:
+          '18',
 
         required:
           true,
 
         readonly:
-          !!accountId
+          !!accountNumber
       },
 
       {
@@ -801,8 +789,8 @@ function depositForm(
     ],
 
     values: {
-      transactionAccountId:
-        accountId
+      transactionAccountNumber:
+        accountNumber ?? ''
     },
 
     onSubmit:
@@ -821,7 +809,7 @@ function depositForm(
         );
 
         onDone(
-          p.transactionAccountId
+          p.transactionAccountNumber
         );
       }
   });
@@ -935,12 +923,6 @@ const accountCols = [
 
 
 const txCols = [
-
-  [
-    'ID',
-    (t) =>
-      t.transactionId
-  ],
 
   [
     'Account Number',
@@ -1865,6 +1847,9 @@ function agentAccounts() {
           <select id="account-filter">
             <option value="">Select filter</option>
             <option value="ACCOUNT_NUMBER">Account Number</option>
+            <option value="CUSTOMER_CODE">Customer Code</option>
+            <option value="CUSTOMER_NAME">Customer Name</option>
+            <option value="CUSTOMER_MOBILE_NUMBER">Customer Mobile Number</option>
             <option value="AMOUNT">Amount</option>
             <option value="DATE">Date</option>
             <option value="PAYMENT_MODE">Payment Mode</option>
@@ -1918,6 +1903,45 @@ function agentAccounts() {
             disabled>
         </label>
       `;
+      return;
+    }
+
+    if (
+      filterType === 'CUSTOMER_CODE' ||
+      filterType === 'CUSTOMER_NAME' ||
+      filterType === 'CUSTOMER_MOBILE_NUMBER'
+    ) {
+      const config = {
+        CUSTOMER_CODE: {
+          label: 'Customer Code',
+          placeholder: 'Enter customer code',
+          maxLength: 30
+        },
+        CUSTOMER_NAME: {
+          label: 'Customer Name',
+          placeholder: 'Enter customer name',
+          maxLength: 100
+        },
+        CUSTOMER_MOBILE_NUMBER: {
+          label: 'Customer Mobile Number',
+          placeholder: 'Enter 10-digit mobile number',
+          maxLength: 10
+        }
+      }[filterType];
+
+      valueWrap.innerHTML = `
+        <label>
+          ${config.label}
+          <input
+            id="account-filter-value"
+            type="text"
+            maxlength="${config.maxLength}"
+            autocomplete="off"
+            placeholder="${config.placeholder}">
+        </label>
+      `;
+
+      $('#account-filter-value')?.focus();
       return;
     }
 
@@ -2036,6 +2060,15 @@ function agentAccounts() {
     }
 
     if (
+      selectedFilter === 'CUSTOMER_MOBILE_NUMBER' &&
+      !/^[789][0-9]{9}$/.test(currentValue)
+    ) {
+      toast('Enter a valid 10-digit customer mobile number.');
+      valueInput?.focus();
+      return;
+    }
+
+    if (
       (selectedFilter === 'AMOUNT' || selectedFilter === 'BALANCE') &&
       (!Number.isFinite(Number(currentValue)) || Number(currentValue) < 0)
     ) {
@@ -2080,7 +2113,7 @@ function agentAccounts() {
 
         deposit: (a) =>
           depositForm(
-            a.accountId,
+            a.accountNumber,
             () => runSearch()
           ),
 
@@ -2192,7 +2225,7 @@ function agentTransactions(
   $('#add').onclick =
     () =>
       depositForm(
-        ctx.accountId ?? null,
+        ctx.accountNumber ?? null,
         () => {
           if ($('#tx-acc').value.trim()) {
             load();
@@ -3119,9 +3152,7 @@ function agentReports() {
               'Transaction',
 
               (t) =>
-                t.transactionId ??
-                t.id ??
-                '—'
+                esc(t.transactionNumber ?? '—')
             ],
 
 

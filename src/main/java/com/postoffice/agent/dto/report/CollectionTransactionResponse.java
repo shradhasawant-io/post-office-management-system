@@ -20,6 +20,8 @@ public class CollectionTransactionResponse {
 
     private Long transactionId;
 
+    private String transactionNumber;
+
     private Long accountId;
 
     private LocalDate transactionDate;

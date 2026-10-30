@@ -16,6 +16,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     Optional<Account> findByAccountIdAndCustomer_Agent_AgentId(Long accountId, Long agentId);
 
+    boolean existsByAccountNumber(String accountNumber);
+
     /**
      * Finds an account by its public account number while enforcing agent ownership
      * in the database query itself.
@@ -23,6 +25,23 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     Optional<Account> findByAccountNumberAndCustomer_Agent_AgentId(
             String accountNumber,
             Long agentId
+    );
+
+    /**
+     * Finds and locks an account by its public account number within the
+     * authenticated agent's ownership scope before changing its balance.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT a
+            FROM Account a
+            JOIN a.customer c
+            WHERE a.accountNumber = :accountNumber
+              AND c.agent.agentId = :agentId
+            """)
+    Optional<Account> findByAccountNumberAndAgentIdForUpdate(
+            @Param("accountNumber") String accountNumber,
+            @Param("agentId") Long agentId
     );
 
     /**

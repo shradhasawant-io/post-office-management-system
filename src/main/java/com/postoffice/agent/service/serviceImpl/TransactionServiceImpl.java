@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -46,8 +47,22 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest request) {
 
-        if (request == null || request.getTransactionAccountId() == null) {
-            throw new BusinessException("Account ID is required");
+        if (request == null) {
+            throw new BusinessException("Deposit request is required");
+        }
+
+        String requestedAccountNumber = request.getTransactionAccountNumber();
+        if (requestedAccountNumber != null && !requestedAccountNumber.isBlank()) {
+            requestedAccountNumber = requestedAccountNumber.trim();
+            if (requestedAccountNumber.length() > 18) {
+                throw new BusinessException("Account number must not exceed 18 characters");
+            }
+            if (request.getTransactionAccountId() != null) {
+                throw new BusinessException(
+                        "Provide account number only; do not provide both account number and account ID");
+            }
+        } else if (request.getTransactionAccountId() == null) {
+            throw new BusinessException("Account number is required");
         }
 
         if (request.getTransactionAmount() == null
@@ -65,11 +80,25 @@ public class TransactionServiceImpl implements TransactionService {
             return toResponseWithInstallmentCount(existing);
         }
 
-        Account account = accountRepository.findByIdForUpdate(request.getTransactionAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Account not found with id: " + request.getTransactionAccountId()));
+        // New clients identify the account by its public account number.
+        // Legacy clients may continue using the internal ID during migration.
+        Account account;
+        if (requestedAccountNumber != null) {
+            account = accountRepository
+                    .findByAccountNumberAndAgentIdForUpdate(
+                            requestedAccountNumber,
+                            authenticatedAgentId
+                    )
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Account not found for the provided account number"));
+        } else {
+            account = accountRepository.findByIdForUpdate(request.getTransactionAccountId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Account not found with id: " + request.getTransactionAccountId()));
+        }
 
-        validateAccountOwnership(account, authenticatedAgentId);
+        // Account-number lookup is already ownership-scoped in the repository.
+        // Legacy ID-based requests were checked immediately after loading.
 
         if (account.getAccountStatus() != AccountStatus.ACTIVE) {
             throw new BusinessException("Transaction cannot be performed on an inactive account");
@@ -89,6 +118,10 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = TransactionMapper.toEntity(request);
         transaction.setTransactionAccountId(account);
         transaction.setTransactionType(TransactionType.DEPOSIT);
+        // The column is NOT NULL, so persist a short temporary backend-only value
+        // first to obtain the database-generated primary key. It is replaced before
+        // this transaction commits. The UNIQUE constraint protects the temporary value.
+        transaction.setTransactionNumber(generateTemporaryTransactionNumber());
         transaction.setTransactionAmount(request.getTransactionAmount());
         transaction.setBalance(account.getBalance());
 
@@ -97,6 +130,13 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         Transaction savedTransaction = transactionRepository.saveAndFlush(transaction);
+
+        // Final business number is deterministic from the generated primary key:
+        // "TXN" + 9 base-36 characters = exactly 12 characters.
+        savedTransaction.setTransactionNumber(
+                generateTransactionNumber(savedTransaction.getTransactionId())
+        );
+        savedTransaction = transactionRepository.saveAndFlush(savedTransaction);
 
         log.info(
                 "Transaction {} created by Agent {} for Account {}. Amount: {}, New Balance: {}",
@@ -108,6 +148,31 @@ public class TransactionServiceImpl implements TransactionService {
         );
 
         return toResponseWithInstallmentCount(savedTransaction);
+    }
+
+    private String generateTemporaryTransactionNumber() {
+        return "TMP" + UUID.randomUUID().toString()
+                .replace("-", "")
+                .substring(0, 9)
+                .toUpperCase(java.util.Locale.ROOT);
+    }
+
+    private String generateTransactionNumber(Long transactionId) {
+        if (transactionId == null || transactionId <= 0) {
+            throw new BusinessException("Unable to generate transaction number");
+        }
+
+        String base36Id = Long.toString(transactionId, 36)
+                .toUpperCase(java.util.Locale.ROOT);
+
+        // Three prefix characters plus nine base-36 characters gives 12 total.
+        // 36^9 - 1 is the maximum supported transaction ID for this format.
+        if (base36Id.length() > 9) {
+            throw new BusinessException(
+                    "Transaction ID capacity exceeded for 12-character transaction numbers");
+        }
+
+        return "TXN" + "0".repeat(9 - base36Id.length()) + base36Id;
     }
 
     private String normalizeIdempotencyKey(String key) {
@@ -135,9 +200,18 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         Transaction transaction = existing.get();
-        boolean sameAccount = transaction.getTransactionAccountId() != null
-                && transaction.getTransactionAccountId().getAccountId()
-                .equals(request.getTransactionAccountId());
+        boolean sameAccount = false;
+        if (transaction.getTransactionAccountId() != null) {
+            if (request.getTransactionAccountNumber() != null
+                    && !request.getTransactionAccountNumber().isBlank()) {
+                sameAccount = transaction.getTransactionAccountId().getAccountNumber()
+                        .equals(request.getTransactionAccountNumber().trim());
+            } else {
+                sameAccount = request.getTransactionAccountId() != null
+                        && transaction.getTransactionAccountId().getAccountId()
+                        .equals(request.getTransactionAccountId());
+            }
+        }
         boolean sameAmount = transaction.getTransactionAmount() != null
                 && transaction.getTransactionAmount().compareTo(request.getTransactionAmount()) == 0;
         boolean samePaymentMode = transaction.getPaymentMode() == request.getPaymentMode();

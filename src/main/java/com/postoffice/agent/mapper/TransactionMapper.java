@@ -1,4 +1,3 @@
-
 package com.postoffice.agent.mapper;
 
 import com.postoffice.agent.dto.transaction.TransactionRequest;
@@ -27,8 +26,7 @@ public class TransactionMapper {
     public static TransactionResponse toResponse(Transaction transaction) {
 
         return TransactionResponse.builder()
-                .transactionId(transaction.getTransactionId())
-                .transactionAccountId(transaction.getTransactionAccountId().getAccountId())
+                .transactionNumber(transaction.getTransactionNumber())
                 .accountNumber(transaction.getTransactionAccountId().getAccountNumber())
                 .customerName(transaction.getTransactionAccountId().getCustomer().getName())
                 .customerCode(transaction.getTransactionAccountId().getCustomer().getCustomerCode())

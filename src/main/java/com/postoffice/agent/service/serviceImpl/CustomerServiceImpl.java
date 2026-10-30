@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -45,13 +47,41 @@ public class CustomerServiceImpl implements CustomerService {
                         new RuntimeException("Authenticated agent not found"));
 
         Customer customer = CustomerMapper.toEntity(request);
-
         customer.setAgent(agent);
 
-        Customer savedCustomer = customerRepository.save(customer);
+        /*
+         * customer_code is NOT NULL and UNIQUE in the existing schema.
+         * Save once with a temporary unique value to obtain the database
+         * generated customerId, then replace it with the business code.
+         * Both writes occur in this transaction, so the temporary value
+         * is never committed as the final customer code.
+         */
+        customer.setCustomerCode("TMP" +
+                UUID.randomUUID().toString().replace("-", "").substring(0, 12));
 
-        return CustomerMapper.toResponse(savedCustomer);
+        Customer savedCustomer = customerRepository.saveAndFlush(customer);
 
+        String customerCode = generateCustomerCode(savedCustomer.getCustomerId());
+        savedCustomer.setCustomerCode(customerCode);
+
+        Customer finalCustomer = customerRepository.saveAndFlush(savedCustomer);
+        return CustomerMapper.toResponse(finalCustomer);
+
+    }
+
+
+    private String generateCustomerCode(Long customerId) {
+        String candidate = "CID" + String.format(Locale.ROOT, "%08d", customerId);
+
+        // Preserve existing customer codes if an older record already uses
+        // the preferred ID-based format.
+        if (customerRepository.existsByCustomerCode(candidate)) {
+            do {
+                candidate = "CID" + Long.toString(customerId, 36).toUpperCase(Locale.ROOT)
+                        + UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase(Locale.ROOT);
+            } while (customerRepository.existsByCustomerCode(candidate));
+        }
+        return candidate;
     }
 
     @Override

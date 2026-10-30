@@ -186,6 +186,9 @@ public class ReportServiceImpl implements ReportService {
                                         .transactionId(
                                                 transaction.getTransactionId()
                                         )
+                                        .transactionNumber(
+                                                transaction.getTransactionNumber()
+                                        )
                                         .accountId(
                                                 transaction
                                                         .getTransactionAccountId()
@@ -239,6 +242,9 @@ public class ReportServiceImpl implements ReportService {
                                 CollectionTransactionResponse.builder()
                                         .transactionId(
                                                 transaction.getTransactionId()
+                                        )
+                                        .transactionNumber(
+                                                transaction.getTransactionNumber()
                                         )
                                         .accountId(
                                                 transaction

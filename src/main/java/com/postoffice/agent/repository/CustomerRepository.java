@@ -46,6 +46,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     );
 
 
+    boolean existsByCustomerCode(String customerCode);
+
     // Get all customers belonging to a specific agent.
     List<Customer> findAllByAgent_AgentId(Long agentId);
 
