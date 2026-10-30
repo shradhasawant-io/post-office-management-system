@@ -177,6 +177,11 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             if (admin.getAdminStatus() != AdminStatus.ACTIVE) {
                 throw new BusinessException("The password reset link is invalid or has expired.");
             }
+            // Reject password reuse before generating a new BCrypt hash.
+            if (passwordEncoder.matches(request.getNewPassword(), admin.getPassword())) {
+                throw new BusinessException("Old and new password cannot be the same.");
+            }
+
             admin.setPassword(passwordEncoder.encode(request.getNewPassword()));
             adminRepository.save(admin);
         } else if (ROLE_AGENT.equals(token.getUserRole())) {
@@ -185,6 +190,11 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             if (agent.getAgentStatus() != AgentStatus.ACTIVE) {
                 throw new BusinessException("The password reset link is invalid or has expired.");
             }
+            // Reject password reuse before generating a new BCrypt hash.
+            if (passwordEncoder.matches(request.getNewPassword(), agent.getPassword())) {
+                throw new BusinessException("Old and new password cannot be the same.");
+            }
+
             agent.setPassword(passwordEncoder.encode(request.getNewPassword()));
             agentRepository.save(agent);
         } else {

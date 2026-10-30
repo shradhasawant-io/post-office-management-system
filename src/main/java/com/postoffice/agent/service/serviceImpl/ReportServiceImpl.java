@@ -181,36 +181,7 @@ public class ReportServiceImpl implements ReportService {
 
         List<CollectionTransactionResponse> details =
                 deposits.stream()
-                        .map(transaction ->
-                                CollectionTransactionResponse.builder()
-                                        .transactionId(
-                                                transaction.getTransactionId()
-                                        )
-                                        .transactionNumber(
-                                                transaction.getTransactionNumber()
-                                        )
-                                        .accountId(
-                                                transaction
-                                                        .getTransactionAccountId()
-                                                        .getAccountId()
-                                        )
-                                        .transactionDate(
-                                                transaction.getTransactionDate()
-                                        )
-                                        .amount(
-                                                transaction.getTransactionAmount()
-                                        )
-                                        .paymentMode(
-                                                transaction.getPaymentMode()
-                                        )
-                                        .transactionType(
-                                                transaction.getTransactionType()
-                                        )
-                                        .remarks(
-                                                transaction.getRemarks()
-                                        )
-                                        .build()
-                        )
+                        .map(this::toReportTransactionResponse)
                         .toList();
 
         BigDecimal totalCollection =
@@ -238,36 +209,7 @@ public class ReportServiceImpl implements ReportService {
 
         List<CollectionTransactionResponse> details =
                 deposits.stream()
-                        .map(transaction ->
-                                CollectionTransactionResponse.builder()
-                                        .transactionId(
-                                                transaction.getTransactionId()
-                                        )
-                                        .transactionNumber(
-                                                transaction.getTransactionNumber()
-                                        )
-                                        .accountId(
-                                                transaction
-                                                        .getTransactionAccountId()
-                                                        .getAccountId()
-                                        )
-                                        .transactionDate(
-                                                transaction.getTransactionDate()
-                                        )
-                                        .amount(
-                                                transaction.getTransactionAmount()
-                                        )
-                                        .paymentMode(
-                                                transaction.getPaymentMode()
-                                        )
-                                        .transactionType(
-                                                transaction.getTransactionType()
-                                        )
-                                        .remarks(
-                                                transaction.getRemarks()
-                                        )
-                                        .build()
-                        )
+                        .map(this::toReportTransactionResponse)
                         .toList();
 
         BigDecimal totalCollection =
@@ -285,6 +227,21 @@ public class ReportServiceImpl implements ReportService {
                 .totalTransactions(deposits.size())
                 .totalCollection(totalCollection)
                 .transactions(details)
+                .build();
+    }
+
+    private CollectionTransactionResponse toReportTransactionResponse(Transaction transaction) {
+        return CollectionTransactionResponse.builder()
+                .transactionId(transaction.getTransactionId())
+                .transactionNumber(transaction.getTransactionNumber())
+                .accountId(transaction.getTransactionAccountId().getAccountId())
+                .accountNumber(transaction.getTransactionAccountId().getAccountNumber())
+                .customerCode(transaction.getTransactionAccountId().getCustomer().getCustomerCode())
+                .transactionDate(transaction.getTransactionDate())
+                .amount(transaction.getTransactionAmount())
+                .paymentMode(transaction.getPaymentMode())
+                .transactionType(transaction.getTransactionType())
+                .remarks(transaction.getRemarks())
                 .build();
     }
 }

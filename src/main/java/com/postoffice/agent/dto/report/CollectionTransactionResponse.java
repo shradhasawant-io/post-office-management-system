@@ -24,6 +24,10 @@ public class CollectionTransactionResponse {
 
     private Long accountId;
 
+    private String accountNumber;
+
+    private String customerCode;
+
     private LocalDate transactionDate;
 
     private BigDecimal amount;

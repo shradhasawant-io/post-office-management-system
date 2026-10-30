@@ -12,6 +12,7 @@ import com.postoffice.agent.exception.ResourceNotFoundException;
 import com.postoffice.agent.mapper.TransactionMapper;
 import com.postoffice.agent.repository.AccountRepository;
 import com.postoffice.agent.repository.TransactionRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import com.postoffice.agent.security.AuthenticatedAgentService;
 import com.postoffice.agent.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -31,15 +33,21 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final AuthenticatedAgentService authenticatedAgentService;
+    private final JdbcTemplate jdbcTemplate;
+
+    private static final DateTimeFormatter TRANSACTION_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyMMdd");
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             AccountRepository accountRepository,
-            AuthenticatedAgentService authenticatedAgentService) {
+            AuthenticatedAgentService authenticatedAgentService,
+            JdbcTemplate jdbcTemplate) {
 
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.authenticatedAgentService = authenticatedAgentService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     // Create a deposit transaction. The account lock serializes balance updates.
@@ -118,23 +126,20 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = TransactionMapper.toEntity(request);
         transaction.setTransactionAccountId(account);
         transaction.setTransactionType(TransactionType.DEPOSIT);
-        // The column is NOT NULL, so persist a short temporary backend-only value
-        // first to obtain the database-generated primary key. It is replaced before
-        // this transaction commits. The UNIQUE constraint protects the temporary value.
-        transaction.setTransactionNumber(generateTemporaryTransactionNumber());
+        // The transaction number is generated after its business date is known.
+        // NULL is used only during this uncommitted insert; the final number is
+        // assigned before the enclosing @Transactional method can commit.
+        transaction.setTransactionNumber(null);
         transaction.setTransactionAmount(request.getTransactionAmount());
         transaction.setBalance(account.getBalance());
 
         if (transaction.getTransactionDate() == null) {
-            transaction.setTransactionDate(java.time.LocalDate.now());
+            transaction.setTransactionDate(LocalDate.now());
         }
 
         Transaction savedTransaction = transactionRepository.saveAndFlush(transaction);
-
-        // Final business number is deterministic from the generated primary key:
-        // "TXN" + 9 base-36 characters = exactly 12 characters.
         savedTransaction.setTransactionNumber(
-                generateTransactionNumber(savedTransaction.getTransactionId())
+                generateDailyTransactionNumber(savedTransaction.getTransactionDate())
         );
         savedTransaction = transactionRepository.saveAndFlush(savedTransaction);
 
@@ -150,29 +155,37 @@ public class TransactionServiceImpl implements TransactionService {
         return toResponseWithInstallmentCount(savedTransaction);
     }
 
-    private String generateTemporaryTransactionNumber() {
-        return "TMP" + UUID.randomUUID().toString()
-                .replace("-", "")
-                .substring(0, 9)
-                .toUpperCase(java.util.Locale.ROOT);
-    }
-
-    private String generateTransactionNumber(Long transactionId) {
-        if (transactionId == null || transactionId <= 0) {
-            throw new BusinessException("Unable to generate transaction number");
+    /**
+     * Generates TXN + YYMMDD + four-digit daily sequence, for example
+     * TXN2610300001. The counter row is incremented atomically by MySQL.
+     * The sequence update and transaction insert participate in the same
+     * Spring transaction, so a failed deposit rolls both back.
+     */
+    private String generateDailyTransactionNumber(LocalDate transactionDate) {
+        if (transactionDate == null) {
+            throw new BusinessException("Transaction date is required to generate transaction number");
         }
 
-        String base36Id = Long.toString(transactionId, 36)
-                .toUpperCase(java.util.Locale.ROOT);
+        // On the first transaction of a date, create counter=1. On subsequent
+        // requests, atomically increment the existing date row. LAST_INSERT_ID
+        // is connection-local, so concurrent database connections get their own value.
+        jdbcTemplate.update("""
+                INSERT INTO transaction_daily_sequence (sequence_date, sequence_value)
+                VALUES (?, LAST_INSERT_ID(1))
+                ON DUPLICATE KEY UPDATE
+                    sequence_value = LAST_INSERT_ID(sequence_value + 1)
+                """, transactionDate);
 
-        // Three prefix characters plus nine base-36 characters gives 12 total.
-        // 36^9 - 1 is the maximum supported transaction ID for this format.
-        if (base36Id.length() > 9) {
+        Long dailySequence = jdbcTemplate.queryForObject(
+                "SELECT LAST_INSERT_ID()", Long.class);
+
+        if (dailySequence == null || dailySequence < 1 || dailySequence > 9999) {
             throw new BusinessException(
-                    "Transaction ID capacity exceeded for 12-character transaction numbers");
+                    "Daily transaction number limit exceeded (maximum 9999 transactions per day)");
         }
 
-        return "TXN" + "0".repeat(9 - base36Id.length()) + base36Id;
+        return "TXN" + transactionDate.format(TRANSACTION_DATE_FORMAT)
+                + String.format(java.util.Locale.ROOT, "%04d", dailySequence);
     }
 
     private String normalizeIdempotencyKey(String key) {

@@ -391,7 +391,7 @@ function table(
           cols
             .map(
               ([, fn]) =>
-                `<td>${fn(r)}</td>`
+                `<td>${fn(r, i)}</td>`
             )
             .join('') +
 
@@ -821,6 +821,11 @@ function depositForm(
 const customerCols = [
 
   [
+    'S.No.',
+    (c, i) => i + 1
+  ],
+
+  [
     'Customer Code',
     (c) =>
       esc(c.customerCode)
@@ -865,6 +870,11 @@ const customerCols = [
 
 
 const accountCols = [
+
+  [
+    'S.No.',
+    (a, i) => i + 1
+  ],
 
   [
     'Account Number',
@@ -923,6 +933,11 @@ const accountCols = [
 
 
 const txCols = [
+
+  [
+    'S.No.',
+    (t, i) => i + 1
+  ],
 
   [
     'Account Number',
@@ -1720,7 +1735,7 @@ async function agentCustomers() {
 
             customerCols.slice(
               0,
-              7
+              8
             ),
 
             rows,
@@ -3149,7 +3164,7 @@ function agentReports() {
           [
 
             [
-              'Transaction',
+              'Transaction Number',
 
               (t) =>
                 esc(t.transactionNumber ?? '—')
@@ -3157,19 +3172,24 @@ function agentReports() {
 
 
             [
-              'Account',
+              'Account Number',
 
               (t) =>
                 esc(
                   t.accountNumber ??
-                  t.accountId ??
-                  t.transactionAccountId ??
                   '—'
                 )
             ],
 
 
-            [
+                        [
+              'Customer Code',
+
+              (t) => esc(t.customerCode ?? '—')
+            ],
+
+
+[
               'Date',
 
               (t) =>
