@@ -622,6 +622,10 @@ function accountForm(
   onDone
 ) {
 
+  // Keep the same key for retries while this creation form is open.
+  const accountCreationIdempotencyKey =
+    !existing ? crypto.randomUUID() : null;
+
   openForm({
 
     title:
@@ -660,11 +664,18 @@ function accountForm(
 
       {
         name: 'depositAmount',
-        label: 'Deposit amount',
+        label: 'Opening deposit amount',
         type: 'number',
         step: '0.01',
         required: true
       },
+
+      ...(!existing ? [{
+        name: 'paymentMode',
+        label: 'Opening deposit payment mode',
+        options: ENUMS.paymentMode,
+        required: true
+      }] : []),
 
       {
         name: 'startDate',
@@ -681,6 +692,10 @@ function accountForm(
 
     onSubmit:
       async (p) => {
+
+        if (!existing) {
+          p.idempotencyKey = accountCreationIdempotencyKey;
+        }
 
         await api(
 
@@ -916,6 +931,14 @@ const accountCols = [
     'Balance',
     (a) =>
       money(a.balance)
+  ],
+
+  [
+    'Installment Count',
+    (a) =>
+      a.installmentCount == null
+        ? '—'
+        : esc(a.installmentCount)
   ],
 
   [

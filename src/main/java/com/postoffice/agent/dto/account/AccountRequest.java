@@ -2,6 +2,7 @@ package com.postoffice.agent.dto.account;
 
 import com.postoffice.agent.enums.AccountType;
 import com.postoffice.agent.enums.Frequency;
+import com.postoffice.agent.enums.PaymentMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +22,10 @@ public class AccountRequest {
     private Long customerId;
 
     private String accountNumber;
+
+    private String idempotencyKey;
+
+    private PaymentMode paymentMode;
 
     private AccountType accountType;
 

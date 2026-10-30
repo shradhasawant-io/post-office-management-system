@@ -12,7 +12,6 @@ import com.postoffice.agent.exception.ResourceNotFoundException;
 import com.postoffice.agent.mapper.TransactionMapper;
 import com.postoffice.agent.repository.AccountRepository;
 import com.postoffice.agent.repository.TransactionRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
 import com.postoffice.agent.security.AuthenticatedAgentService;
 import com.postoffice.agent.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -33,21 +31,18 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final AuthenticatedAgentService authenticatedAgentService;
-    private final JdbcTemplate jdbcTemplate;
-
-    private static final DateTimeFormatter TRANSACTION_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("yyMMdd");
+    private final DailyTransactionNumberGenerator transactionNumberGenerator;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             AccountRepository accountRepository,
             AuthenticatedAgentService authenticatedAgentService,
-            JdbcTemplate jdbcTemplate) {
+            DailyTransactionNumberGenerator transactionNumberGenerator) {
 
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.authenticatedAgentService = authenticatedAgentService;
-        this.jdbcTemplate = jdbcTemplate;
+        this.transactionNumberGenerator = transactionNumberGenerator;
     }
 
     // Create a deposit transaction. The account lock serializes balance updates.
@@ -162,30 +157,7 @@ public class TransactionServiceImpl implements TransactionService {
      * Spring transaction, so a failed deposit rolls both back.
      */
     private String generateDailyTransactionNumber(LocalDate transactionDate) {
-        if (transactionDate == null) {
-            throw new BusinessException("Transaction date is required to generate transaction number");
-        }
-
-        // On the first transaction of a date, create counter=1. On subsequent
-        // requests, atomically increment the existing date row. LAST_INSERT_ID
-        // is connection-local, so concurrent database connections get their own value.
-        jdbcTemplate.update("""
-                INSERT INTO transaction_daily_sequence (sequence_date, sequence_value)
-                VALUES (?, LAST_INSERT_ID(1))
-                ON DUPLICATE KEY UPDATE
-                    sequence_value = LAST_INSERT_ID(sequence_value + 1)
-                """, transactionDate);
-
-        Long dailySequence = jdbcTemplate.queryForObject(
-                "SELECT LAST_INSERT_ID()", Long.class);
-
-        if (dailySequence == null || dailySequence < 1 || dailySequence > 9999) {
-            throw new BusinessException(
-                    "Daily transaction number limit exceeded (maximum 9999 transactions per day)");
-        }
-
-        return "TXN" + transactionDate.format(TRANSACTION_DATE_FORMAT)
-                + String.format(java.util.Locale.ROOT, "%04d", dailySequence);
+        return transactionNumberGenerator.generate(transactionDate);
     }
 
     private String normalizeIdempotencyKey(String key) {

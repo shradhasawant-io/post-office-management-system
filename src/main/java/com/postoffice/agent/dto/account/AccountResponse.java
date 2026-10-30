@@ -44,6 +44,8 @@ public class AccountResponse {
 
     private BigDecimal balance;
 
+    private Long installmentCount;
+
     private AccountStatus accountStatus;
 
     private LocalDateTime createdAt;

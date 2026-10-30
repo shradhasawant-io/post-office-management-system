@@ -16,6 +16,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     Optional<Transaction> findByIdempotencyKey(String idempotencyKey);
 
+    long countByTransactionAccountId_AccountIdAndTransactionType(
+            Long accountId,
+            TransactionType transactionType
+    );
+
     long countByTransactionAccountId_AccountIdAndTransactionTypeAndTransactionIdLessThanEqual(
             Long accountId,
             TransactionType transactionType,

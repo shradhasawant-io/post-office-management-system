@@ -18,6 +18,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     boolean existsByAccountNumber(String accountNumber);
 
+    Optional<Account> findByCreationIdempotencyKey(String creationIdempotencyKey);
+
     /**
      * Finds an account by its public account number while enforcing agent ownership
      * in the database query itself.
