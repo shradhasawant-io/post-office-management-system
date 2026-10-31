@@ -63,8 +63,10 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public AccountResponse createAccount(AccountRequest request) {
 
-        if (request == null || request.getCustomerId() == null) {
-            throw new BusinessException("Customer ID is required");
+        if (request == null
+                || ((request.getCustomerCode() == null || request.getCustomerCode().isBlank())
+                && request.getCustomerId() == null)) {
+            throw new BusinessException("Customer Code is required");
         }
         if (request.getDepositAmount() == null || request.getDepositAmount().signum() <= 0) {
             throw new BusinessException("Opening deposit amount must be greater than zero");
@@ -89,10 +91,7 @@ public class AccountServiceImpl implements AccountService {
             return toAccountResponseWithInstallmentCount(existing);
         }
 
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-
-        validateCustomerOwnership(customer, agentId);
+        Customer customer = resolveCustomerForAgent(request, agentId);
         validateAccountTypeAndFrequency(request.getAccountType(), request.getFrequency());
 
         Account account = AccountMapper.toEntity(request);
@@ -141,6 +140,26 @@ public class AccountServiceImpl implements AccountService {
         return toAccountResponseWithInstallmentCount(savedAccount);
     }
 
+    /**
+     * Resolves the customer only inside the authenticated agent's ownership scope.
+     * Customer Code is the preferred public identifier. The internal customerId
+     * fallback is retained only for older API clients during migration.
+     */
+    private Customer resolveCustomerForAgent(AccountRequest request, Long agentId) {
+        if (request.getCustomerCode() != null && !request.getCustomerCode().isBlank()) {
+            String customerCode = request.getCustomerCode().trim().toUpperCase(Locale.ROOT);
+            return customerRepository
+                    .findByCustomerCodeAndAgent_AgentId(customerCode, agentId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Customer not found for the provided Customer Code"));
+        }
+
+        // Legacy compatibility path; still ownership-scoped.
+        return customerRepository
+                .findByCustomerIdAndAgent_AgentId(request.getCustomerId(), agentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+    }
+
     private String normalizeCreationIdempotencyKey(String key) {
         if (key == null || key.isBlank()) {
             throw new BusinessException("Idempotency key is required for account creation");
@@ -157,8 +176,18 @@ public class AccountServiceImpl implements AccountService {
             AccountRequest request,
             PaymentMode requestedPaymentMode) {
 
+        boolean sameCustomer;
+        if (request.getCustomerCode() != null && !request.getCustomerCode().isBlank()) {
+            sameCustomer = existing.getCustomer().getCustomerCode()
+                    .equalsIgnoreCase(request.getCustomerCode().trim());
+        } else {
+            // Backward compatibility for clients that still send customerId.
+            sameCustomer = request.getCustomerId() != null
+                    && existing.getCustomer().getCustomerId().equals(request.getCustomerId());
+        }
+
         boolean sameRequest =
-                existing.getCustomer().getCustomerId().equals(request.getCustomerId())
+                sameCustomer
                         && existing.getAccountType() == request.getAccountType()
                         && existing.getFrequency() == request.getFrequency()
                         && existing.getDepositAmount().compareTo(request.getDepositAmount()) == 0
@@ -259,8 +288,10 @@ public class AccountServiceImpl implements AccountService {
             throw new BusinessException("Account ID is required");
         }
 
-        if (request == null || request.getCustomerId() == null) {
-            throw new BusinessException("Customer ID is required");
+        if (request == null
+                || ((request.getCustomerCode() == null || request.getCustomerCode().isBlank())
+                && request.getCustomerId() == null)) {
+            throw new BusinessException("Customer Code is required");
         }
 
         // Find the account only if it belongs to this agent
@@ -271,14 +302,7 @@ public class AccountServiceImpl implements AccountService {
                 );
 
         // Find the requested customer
-        Customer customer = customerRepository
-                .findById(request.getCustomerId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Customer not found")
-                );
-
-        // Check that the customer belongs to this agent
-        validateCustomerOwnership(customer, agentId);
+        Customer customer = resolveCustomerForAgent(request, agentId);
 
         // Do not allow changing the account's customer
         if (!account.getCustomer().getCustomerId()

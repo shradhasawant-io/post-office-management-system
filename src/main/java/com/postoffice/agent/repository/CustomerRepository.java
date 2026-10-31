@@ -48,6 +48,15 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     boolean existsByCustomerCode(String customerCode);
 
+    /**
+     * Resolve a customer by its public code within the authenticated agent's
+     * ownership scope. Never use an unscoped customer-code lookup for agent actions.
+     */
+    Optional<Customer> findByCustomerCodeAndAgent_AgentId(
+            String customerCode,
+            Long agentId
+    );
+
     // Get all customers belonging to a specific agent.
     List<Customer> findAllByAgent_AgentId(Long agentId);
 

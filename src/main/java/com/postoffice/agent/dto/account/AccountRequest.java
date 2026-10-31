@@ -19,6 +19,16 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class AccountRequest {
 
+    /**
+     * Public customer identifier used by the account-creation UI.
+     */
+    private String customerCode;
+
+    /**
+     * @deprecated Kept temporarily for backward compatibility with existing API clients.
+     * New account creation requests should send customerCode.
+     */
+    @Deprecated
     private Long customerId;
 
     private String accountNumber;

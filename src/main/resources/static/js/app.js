@@ -618,7 +618,7 @@ function customerForm(
 
 function accountForm(
   existing,
-  customerId,
+  customerCode,
   onDone
 ) {
 
@@ -636,14 +636,15 @@ function accountForm(
     fields: [
 
       {
-        name: 'customerId',
-        label: 'Customer ID (internal)',
-        type: 'number',
+        name: 'customerCode',
+        label: 'Customer Code',
+        type: 'text',
+        maxlength: '30',
         required: true,
         readonly:
           !!(
             existing ||
-            customerId
+            customerCode
           )
       },
       {
@@ -687,7 +688,7 @@ function accountForm(
 
     values:
       existing || {
-        customerId
+        customerCode
       },
 
     onSubmit:
@@ -1793,7 +1794,7 @@ async function agentCustomers() {
               (c) =>
                 accountForm(
                   null,
-                  c.id,
+                  c.customerCode,
                   () =>
                     showView(
                       'accounts'
