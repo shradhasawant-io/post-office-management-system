@@ -30,7 +30,7 @@ public class Account {
     @Column(nullable = false, length = 18, unique = true)
     private String accountNumber;
 
-    /** Client key used to make account-creation retries safe. */
+    // Client key used to make account-creation retries safe
     @Column(name = "creation_idempotency_key", unique = true, length = 100)
     private String creationIdempotencyKey;
 

@@ -51,10 +51,8 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionType transactionType = TransactionType.DEPOSIT;
 
-    /**
-     * Lifecycle status is separate from transactionType.
-     * INACTIVE transactions remain stored as financial history.
-     */
+    // Lifecycle status is separate from transactionType
+    // INACTIVE transactions remain stored as financial history
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_status", nullable = false, length = 10)

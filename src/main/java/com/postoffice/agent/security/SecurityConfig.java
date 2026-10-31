@@ -65,9 +65,7 @@ public class SecurityConfig {
                 // Authorization
                 .authorizeHttpRequests(auth -> auth
 
-                        // ==============================
                         // Swagger
-                        // ==============================
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -95,25 +93,19 @@ public class SecurityConfig {
                                 "/api/auth/reset-password"
                         ).permitAll()
 
-                        // ==============================
                         // ROLE VERIFICATION
-                        // ==============================
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/verify-role"
                         ).authenticated()
 
-                        // ==============================
                         // INITIAL ADMIN CREATION
-                        // ==============================
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/admins"
                         ).permitAll()
 
-                        // ==============================
                         // EVERYTHING ELSE
-                        // ==============================
                         .anyRequest().authenticated()
                 )
 

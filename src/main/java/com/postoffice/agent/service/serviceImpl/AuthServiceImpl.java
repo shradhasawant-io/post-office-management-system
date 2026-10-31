@@ -17,14 +17,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getAuthenticatedRole(Authentication authentication) {
 
-        /*
-         * The user must be authenticated before the role
-         * can be determined.
-         *
-         * AnonymousAuthenticationToken is also considered
-         * authenticated by Spring Security, so it must be
-         * explicitly rejected here.
-         */
+        // The user must be authenticated before the role can be determined
+        // AnonymousAuthenticationToken is also considered authenticated by Spring Security, so it must be explicitly rejected here
         if (authentication == null
                 || !authentication.isAuthenticated()
                 || authentication instanceof AnonymousAuthenticationToken) {
@@ -34,15 +28,8 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        /*
-         * Spring Security has already authenticated the
-         * username/password and populated the user's
-         * granted authorities.
-         *
-         * We determine the application role from those
-         * authorities instead of accepting a role from
-         * the frontend.
-         */
+        // Spring Security has already authenticated the username/password and populated the user's granted authorities.
+        // We determine the application role from those authorities instead of accepting a role from the frontend
         for (GrantedAuthority authority : authentication.getAuthorities()) {
 
             String authorityName = authority.getAuthority();
@@ -56,10 +43,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        /*
-         * The credentials were authenticated, but the user
-         * does not have one of the application's valid roles.
-         */
+        // The credentials were authenticated, but the user does not have one of the application's valid roles
         throw new AccessDeniedException(
                 "Authenticated user does not have a valid application role."
         );

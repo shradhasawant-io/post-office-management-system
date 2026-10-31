@@ -63,13 +63,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = CustomerMapper.toEntity(request);
         customer.setAgent(agent);
 
-        /*
-         * customer_code is NOT NULL and UNIQUE in the existing schema.
-         * Save once with a temporary unique value to obtain the database
-         * generated customerId, then replace it with the business code.
-         * Both writes occur in this transaction, so the temporary value
-         * is never committed as the final customer code.
-         */
+        // Automatic Customer Code Generation
         customer.setCustomerCode("TMP" +
                 UUID.randomUUID().toString().replace("-", "").substring(0, 12));
 
@@ -87,8 +81,7 @@ public class CustomerServiceImpl implements CustomerService {
     private String generateCustomerCode(Long customerId) {
         String candidate = "CID" + String.format(Locale.ROOT, "%08d", customerId);
 
-        // Preserve existing customer codes if an older record already uses
-        // the preferred ID-based format.
+        // Preserve existing customer codes if an older record already uses the preferred ID-based format.
         if (customerRepository.existsByCustomerCode(candidate)) {
             do {
                 candidate = "CID" + Long.toString(customerId, 36).toUpperCase(Locale.ROOT)
@@ -216,6 +209,8 @@ public class CustomerServiceImpl implements CustomerService {
      * supply an agent ID. All linked accounts are made inactive in the same
      * database transaction so no further deposits can be posted to them.
      */
+    // Soft-deletes a customer while preserving account and transaction history.
+    // The customer is scoped to the authenticated agent; the caller cannot supply an agent ID. All linked accounts are made inactive in the same database transaction so no further deposits can be posted to them
     @Override
     @Transactional
     public void deleteCustomer(Long customerId) {
@@ -226,8 +221,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Long agentId = authenticatedAgentService.getAuthenticatedAgentId();
 
-        // Lock the customer first. Account creation uses the same lock, so a
-        // new account cannot be created while this customer is being deactivated.
+        // Lock the customer first. Account creation uses the same lock, so a new account cannot be created while this customer is being deactivated.
         Customer customer = customerRepository
                 .findByCustomerIdAndAgentIdForUpdate(customerId, agentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));

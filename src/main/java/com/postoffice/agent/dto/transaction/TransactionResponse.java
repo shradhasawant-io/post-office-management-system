@@ -21,14 +21,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TransactionResponse {
 
-    /**
-     * Sequential number of this account's successful deposit transaction.
-     */
+    // Sequential number of this account's successful deposit transaction
     private Long installmentCount;
 
     private String transactionNumber;
 
-    /** Customer-facing account number used in the UI. */
+    // Customer account number used in the UI
     private String accountNumber;
 
     private String customerName;

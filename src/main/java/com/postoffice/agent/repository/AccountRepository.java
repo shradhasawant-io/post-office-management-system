@@ -20,19 +20,13 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     Optional<Account> findByCreationIdempotencyKey(String creationIdempotencyKey);
 
-    /**
-     * Finds an account by its public account number while enforcing agent ownership
-     * in the database query itself.
-     */
+    // Finds an account by its public account number while enforcing agent ownership in the database query itself
     Optional<Account> findByAccountNumberAndCustomer_Agent_AgentId(
             String accountNumber,
             Long agentId
     );
 
-    /**
-     * Finds and locks an account by its public account number within the
-     * authenticated agent's ownership scope before changing its balance.
-     */
+    // Finds and locks an account by its public account number within the authenticated agent's ownership scope before changing its balance
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT a
@@ -46,9 +40,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
             @Param("agentId") Long agentId
     );
 
-    /**
-     * Serializes balance updates and idempotency checks for one account.
-     */
+
+    // Serializes balance updates and idempotency checks for one account
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.accountId = :accountId")
     Optional<Account> findByIdForUpdate(@Param("accountId") Long accountId);
@@ -57,10 +50,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     List<Account> findByCustomer_CustomerId(Long customerId);
 
-    /**
-     * Locks every account belonging to a customer before deactivation.
-     * This serializes customer deactivation with deposits that lock account rows.
-     */
+    // Locks every account belonging to a customer before deactivation
+    // This serializes customer deactivation with deposits that lock account rows
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT a

@@ -95,9 +95,7 @@ public class ReportServiceImpl implements ReportService {
         Long authenticatedAgentId =
                 authenticatedAgentService.getAuthenticatedAgentId();
 
-        /*
-         * Normalize account number.
-         */
+        // Normalize account number
         if (accountNumber != null) {
             accountNumber = accountNumber.trim();
 
@@ -106,9 +104,7 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        /*
-         * Validate date range.
-         */
+        // Validate date range
         if (startDate != null
                 && endDate != null
                 && endDate.isBefore(startDate)) {
@@ -118,9 +114,7 @@ public class ReportServiceImpl implements ReportService {
             );
         }
 
-        /*
-         * Validate amount.
-         */
+        // Validate amount
         if (amount != null && amount.signum() < 0) {
             throw new BusinessException(
                     "Amount cannot be negative"
@@ -138,12 +132,7 @@ public class ReportServiceImpl implements ReportService {
                 paymentMode
         );
 
-        /*
-         * SECURITY:
-         *
-         * authenticatedAgentId comes from Spring Security.
-         * It is NOT supplied by the frontend.
-         */
+        // SECURITY: authenticatedAgentId comes from Spring Security. It is NOT supplied by the frontend.
         List<Transaction> deposits =
                 transactionRepository.searchDepositsForAgent(
                         TransactionType.DEPOSIT,

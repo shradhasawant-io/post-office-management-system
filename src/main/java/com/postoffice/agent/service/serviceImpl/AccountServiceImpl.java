@@ -141,11 +141,8 @@ public class AccountServiceImpl implements AccountService {
         return toAccountResponseWithInstallmentCount(savedAccount);
     }
 
-    /**
-     * Resolves the customer only inside the authenticated agent's ownership scope.
-     * Customer Code is the preferred public identifier. The internal customerId
-     * fallback is retained only for older API clients during migration.
-     */
+    // Resolves the customer only inside the authenticated agent's ownership scope
+    // Customer Code is the preferred public identifier. The internal customerId fallback is retained only for older API clients during migration
     private Customer resolveCustomerForAgent(AccountRequest request, Long agentId) {
         Customer customer;
 
@@ -369,14 +366,7 @@ public class AccountServiceImpl implements AccountService {
         Specification<Account> specification =
                 (root, query, criteriaBuilder) -> {
 
-                    /*
-                     * CRITICAL SECURITY CONDITION
-                     *
-                     * Never remove this condition.
-                     *
-                     * The agent ID comes from the authenticated
-                     * Spring Security user, NOT from the frontend.
-                     */
+                    // The agent ID comes from the authenticated Spring Security user, NOT from the frontend.
                     Predicate ownershipPredicate =
                             criteriaBuilder.equal(
                                     root.get("agent").get("agentId"),
@@ -505,10 +495,8 @@ public class AccountServiceImpl implements AccountService {
                                             JoinType.INNER
                                     );
 
-                            /*
-                             * One account can have multiple transactions.
-                             * DISTINCT prevents duplicate Account rows.
-                             */
+                            // One account can have multiple transactions
+                            // DISTINCT prevents duplicate Account rows
                             query.distinct(true);
 
                             filterPredicate =

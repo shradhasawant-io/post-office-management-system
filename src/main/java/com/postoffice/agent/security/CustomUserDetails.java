@@ -57,11 +57,6 @@ public class CustomUserDetails implements UserDetails {
         return username;
     }
 
-    /**
-     * Respect the enabled flag populated from Admin/Agent status.
-     * Without this override, inactive users could be authenticated
-     * because UserDetails' default implementation may report enabled.
-     */
     @Override
     public boolean isEnabled() {
         return enabled;

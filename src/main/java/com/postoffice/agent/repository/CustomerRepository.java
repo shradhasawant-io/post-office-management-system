@@ -50,19 +50,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     boolean existsByCustomerCode(String customerCode);
 
-    /**
-     * Resolve a customer by its public code within the authenticated agent's
-     * ownership scope. Never use an unscoped customer-code lookup for agent actions.
-     */
+    // Resolve a customer by its public code within the authenticated agent's ownership scope. Never use an unscoped customer-code lookup for agent actions.
     Optional<Customer> findByCustomerCodeAndAgent_AgentId(
             String customerCode,
             Long agentId
     );
 
-    /**
-     * Locks the customer row while account creation/deletion is in progress.
-     * This serializes account creation against customer archival.
-     */
+    // Locks the customer row while account creation/deletion is in progress
+    // This serializes account creation against customer archival
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT c

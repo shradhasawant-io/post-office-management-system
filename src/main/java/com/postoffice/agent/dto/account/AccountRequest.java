@@ -21,10 +21,8 @@ public class AccountRequest {
 
     private String customerCode;
 
-    /**
-     * @deprecated Kept temporarily for backward compatibility with existing API clients.
-     * New account creation requests should send customerCode.
-     */
+    // @deprecated Kept temporarily for backward compatibility with existing API clients
+    // New account creation requests should send customerCode
     @Deprecated
     private Long customerId;
 
