@@ -48,6 +48,15 @@ public class CustomerController {
         return customerService.updateCustomer(id, request);
     }
 
+
+    // SOFT DELETE CUSTOMER (AGENT CAN DELETE ONLY OWN CUSTOMERS)
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('AGENT')")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // SEARCH CUSTOMERS
     @GetMapping("/search")
     @PreAuthorize("hasRole('AGENT')")

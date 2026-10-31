@@ -15,6 +15,8 @@ public interface CustomerService {
 
     CustomerResponse updateCustomer(Long customerId, CustomerRequest request);
 
+    void deleteCustomer(Long customerId);
+
     List<CustomerResponse> searchCustomers(String keyword);
 
     List<CustomerResponse> getCustomersByAgentId(Long agentId);

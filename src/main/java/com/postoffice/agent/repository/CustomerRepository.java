@@ -2,6 +2,8 @@ package com.postoffice.agent.repository;
 
 import com.postoffice.agent.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -55,6 +57,34 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByCustomerCodeAndAgent_AgentId(
             String customerCode,
             Long agentId
+    );
+
+    /**
+     * Locks the customer row while account creation/deletion is in progress.
+     * This serializes account creation against customer archival.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT c
+        FROM Customer c
+        WHERE c.customerCode = :customerCode
+          AND c.agent.agentId = :agentId
+        """)
+    Optional<Customer> findByCustomerCodeAndAgentIdForUpdate(
+            @Param("customerCode") String customerCode,
+            @Param("agentId") Long agentId
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT c
+        FROM Customer c
+        WHERE c.customerId = :customerId
+          AND c.agent.agentId = :agentId
+        """)
+    Optional<Customer> findByCustomerIdAndAgentIdForUpdate(
+            @Param("customerId") Long customerId,
+            @Param("agentId") Long agentId
     );
 
     // Get all customers belonging to a specific agent.

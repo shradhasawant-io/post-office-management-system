@@ -241,6 +241,7 @@ public class ReportServiceImpl implements ReportService {
                 .amount(transaction.getTransactionAmount())
                 .paymentMode(transaction.getPaymentMode())
                 .transactionType(transaction.getTransactionType())
+                .transactionStatus(transaction.getTransactionStatus())
                 .remarks(transaction.getRemarks())
                 .build();
     }

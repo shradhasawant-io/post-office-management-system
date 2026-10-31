@@ -7,6 +7,7 @@ import com.postoffice.agent.entity.Agent;
 import com.postoffice.agent.entity.Customer;
 import com.postoffice.agent.entity.Transaction;
 import com.postoffice.agent.enums.AccountStatus;
+import com.postoffice.agent.enums.CustomerStatus;
 import com.postoffice.agent.enums.AccountType;
 import com.postoffice.agent.enums.Frequency;
 import com.postoffice.agent.enums.PaymentMode;
@@ -146,18 +147,26 @@ public class AccountServiceImpl implements AccountService {
      * fallback is retained only for older API clients during migration.
      */
     private Customer resolveCustomerForAgent(AccountRequest request, Long agentId) {
+        Customer customer;
+
         if (request.getCustomerCode() != null && !request.getCustomerCode().isBlank()) {
             String customerCode = request.getCustomerCode().trim().toUpperCase(Locale.ROOT);
-            return customerRepository
-                    .findByCustomerCodeAndAgent_AgentId(customerCode, agentId)
+            customer = customerRepository
+                    .findByCustomerCodeAndAgentIdForUpdate(customerCode, agentId)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Customer not found for the provided Customer Code"));
+        } else {
+            // Legacy compatibility path; still ownership-scoped.
+            customer = customerRepository
+                    .findByCustomerIdAndAgentIdForUpdate(request.getCustomerId(), agentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         }
 
-        // Legacy compatibility path; still ownership-scoped.
-        return customerRepository
-                .findByCustomerIdAndAgent_AgentId(request.getCustomerId(), agentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        if (customer.getCustomerStatus() == CustomerStatus.DELETED) {
+            throw new ResourceNotFoundException("Customer not found");
+        }
+
+        return customer;
     }
 
     private String normalizeCreationIdempotencyKey(String key) {

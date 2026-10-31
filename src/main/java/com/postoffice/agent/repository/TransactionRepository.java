@@ -131,5 +131,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByTransactionAccountId_AccountId(Long accountId);
 
+    /**
+     * Loads historical transactions for all accounts being deactivated.
+     * Rows are updated in place; they are never deleted.
+     */
+    List<Transaction> findByTransactionAccountId_AccountIdIn(List<Long> accountIds);
+
     List<Transaction> findByTransactionAccountId_Customer_Agent_AgentId(Long agentId);
 }

@@ -23,6 +23,8 @@ public class ReportController {
         this.reportService = reportService;
     }
 
+
+    // GET DAILY REPORTS
     @GetMapping("/daily")
     @PreAuthorize("hasRole('AGENT')")
     public CollectionReportResponse getDailyReport(
@@ -33,6 +35,7 @@ public class ReportController {
         return reportService.getDailyReport(date);
     }
 
+    // GET MONTHLY REPORTS
     @GetMapping("/monthly")
     @PreAuthorize("hasRole('AGENT')")
     public CollectionReportResponse getMonthlyReport(
@@ -42,14 +45,10 @@ public class ReportController {
         return reportService.getMonthlyReport(year, month);
     }
 
-    /**
-     * Search/filter reports for the authenticated agent.
-     *
-     * IMPORTANT:
-     * agentId is deliberately NOT accepted from the client.
-     * The authenticated agent ID is obtained inside the service
-     * from Spring Security.
-     */
+    // Search/filter reports for the authenticated agent
+    // IMPORTANT:
+    // AgentId is deliberately NOT accepted from the client
+    // The authenticated agent ID is obtained inside the service from Spring Security
     @GetMapping("/search")
     @PreAuthorize("hasRole('AGENT')")
     public CollectionReportResponse searchReports(

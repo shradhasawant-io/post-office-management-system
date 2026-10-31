@@ -19,9 +19,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class AccountRequest {
 
-    /**
-     * Public customer identifier used by the account-creation UI.
-     */
     private String customerCode;
 
     /**

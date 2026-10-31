@@ -2,6 +2,7 @@ package com.postoffice.agent.entity;
 
 import com.postoffice.agent.enums.PaymentMode;
 import com.postoffice.agent.enums.TransactionType;
+import com.postoffice.agent.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,6 +50,15 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType transactionType = TransactionType.DEPOSIT;
+
+    /**
+     * Lifecycle status is separate from transactionType.
+     * INACTIVE transactions remain stored as financial history.
+     */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_status", nullable = false, length = 10)
+    private TransactionStatus transactionStatus = TransactionStatus.ACTIVE;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal transactionAmount;

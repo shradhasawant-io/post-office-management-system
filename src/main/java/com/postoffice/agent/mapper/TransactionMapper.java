@@ -32,6 +32,7 @@ public class TransactionMapper {
                 .customerCode(transaction.getTransactionAccountId().getCustomer().getCustomerCode())
                 .transactionDate(transaction.getTransactionDate())
                 .transactionType(transaction.getTransactionType())
+                .transactionStatus(transaction.getTransactionStatus())
                 .transactionAmount(transaction.getTransactionAmount())
                 .paymentMode(transaction.getPaymentMode())
                 .remarks(transaction.getRemarks())

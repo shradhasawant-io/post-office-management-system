@@ -54,4 +54,21 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     Optional<Account> findByIdForUpdate(@Param("accountId") Long accountId);
 
     List<Account> findByCustomer_Agent_AgentId(Long agentId);
+
+    List<Account> findByCustomer_CustomerId(Long customerId);
+
+    /**
+     * Locks every account belonging to a customer before deactivation.
+     * This serializes customer deactivation with deposits that lock account rows.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT a
+            FROM Account a
+            WHERE a.customer.customerId = :customerId
+            ORDER BY a.accountId
+            """)
+    List<Account> findByCustomer_CustomerIdForUpdate(
+            @Param("customerId") Long customerId
+    );
 }

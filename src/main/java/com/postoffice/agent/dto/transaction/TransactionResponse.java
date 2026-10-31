@@ -3,6 +3,7 @@ package com.postoffice.agent.dto.transaction;
 
 import com.postoffice.agent.enums.PaymentMode;
 import com.postoffice.agent.enums.TransactionType;
+import com.postoffice.agent.enums.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +38,8 @@ public class TransactionResponse {
     private LocalDate transactionDate;
 
     private TransactionType transactionType;
+
+    private TransactionStatus transactionStatus;
 
     private BigDecimal transactionAmount;
 

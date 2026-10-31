@@ -20,6 +20,7 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
 
+    // Verify Role
     @PostMapping("/verify-role")
     public ResponseEntity<Map<String, String>> verifyRole(
             Authentication authentication) {
@@ -30,6 +31,8 @@ public class AuthController {
                 Map.of("role", role)
         );
     }
+
+    // Forget Password
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest request) {
@@ -38,6 +41,7 @@ public class AuthController {
                 "message", "If the supplied username and recovery email match an active account, a password reset link will be sent."));
     }
 
+    // Reset Password
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {

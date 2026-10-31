@@ -994,6 +994,12 @@ const txCols = [
   ],
 
   [
+    'Status',
+    (t) =>
+      badge(t.transactionStatus ?? 'ACTIVE')
+  ],
+
+  [
     'Installment Count',
     (t) =>
       t.installmentCount == null
@@ -1775,6 +1781,13 @@ async function agentCustomers() {
                 'account',
                 i,
                 'New account'
+              ) +
+
+              act(
+                'delete',
+                i,
+                'Delete',
+                'danger'
               )
           )
         );
@@ -1799,7 +1812,33 @@ async function agentCustomers() {
                     showView(
                       'accounts'
                     )
-                )
+                ),
+
+            delete:
+              async (c) => {
+                const confirmed = window.confirm(
+                  `Deactivate customer ${c.name} (${c.customerCode})?\n\n` +
+                  'The customer will be removed from the active customer list. ' +
+                  'All linked accounts and transactions will be marked INACTIVE. ' +
+                  'Account balances and historical financial records will be preserved.'
+                );
+
+                if (!confirmed) {
+                  return;
+                }
+
+                try {
+                  await api(
+                    'DELETE',
+                    `/api/customers/${c.id}`
+                  );
+
+                  toast('Customer deactivated. Linked accounts and transactions are now inactive.');
+                  await run();
+                } catch (e) {
+                  toast(e.message);
+                }
+              }
           }
         );
 
@@ -3255,6 +3294,14 @@ function agentReports() {
                 )
             ],
 
+            [
+              'Status',
+
+              (t) =>
+                badge(
+                  t.transactionStatus ?? 'ACTIVE'
+                )
+            ],
 
             [
               'Remarks',

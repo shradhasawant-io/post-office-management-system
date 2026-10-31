@@ -2,6 +2,7 @@ package com.postoffice.agent.dto.report;
 
 import com.postoffice.agent.enums.PaymentMode;
 import com.postoffice.agent.enums.TransactionType;
+import com.postoffice.agent.enums.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,6 +36,8 @@ public class CollectionTransactionResponse {
     private PaymentMode paymentMode;
 
     private TransactionType transactionType;
+
+    private TransactionStatus transactionStatus;
 
     private String remarks;
 }
